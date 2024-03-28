@@ -14,15 +14,6 @@ export default {
             orders: [],
         }
     },
-    methods: {
-        async getOrders() {
-            axios
-                .get('/orders')
-                .then((response) => {
-                    this.orders = response.data;
-                })
-        }
-    },
 }
 
 

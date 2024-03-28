@@ -21,16 +21,6 @@ export default {
             },
         }
     },
-    methods: {
-        async getSingleItem() {
-            const itemId = this.$route.params.id
-            axios
-                .get('/items/${itemId}')
-                .then((response) => {
-                    this.item = response.data;
-                })
-        }
-    },
 }
 
 

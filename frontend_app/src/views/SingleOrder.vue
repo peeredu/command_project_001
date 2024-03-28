@@ -18,16 +18,6 @@ export default {
             },
         }
     },
-    methods: {
-        async getSingleOrder() {
-            const orderId = this.$route.params.id
-            axios
-                .get('/orders/${orderId}')
-                .then((response) => {
-                    this.item = response.data;
-                })
-        }
-    },
 }
 
 

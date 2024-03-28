@@ -1,9 +1,6 @@
 <template>
     <div class='ItemCard'>
-        <p>{{ item.name }}</p>
-        <p>{{ item.price }}</p>
-        <p>{{ item.quantity }}</p>
-        <p>{{ item.in_stock }}</p>
+        <p v-for="prop in Object.keys(item)">{{ item[prop] }}</p>
     </div>
 </template>
 
