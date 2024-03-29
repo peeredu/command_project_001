@@ -6,7 +6,6 @@ import SingleOrder from '@/views/SingleOrder'
 import { createRouter, createWebHistory } from 'vue-router'
 
 // По этим роутам должны быть созданы страницы
-
 const routes = [
     {
         path: '/',
