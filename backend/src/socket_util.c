@@ -172,11 +172,12 @@ void build_http_response(char *response, size_t *response_len) {
   char *header = (char *)malloc(BUFFER_SIZE * sizeof(char));
   snprintf(header, BUFFER_SIZE,
            "HTTP/1.1 200 OK\r\n"
-           "Content-Type: text/plain\r\n"
+           "Content-Type: application/json\r\n"
+           "Content-Length: 19\r\n"
            "\r\n"
-           "Processed!!!");
+           "{\"success\": \"true\"}");
   /*
-    // if file not exist, response is 404 Not Found
+    // 404 Not Found on error
     int file_fd = open(file_name, O_RDONLY);
     if (file_fd == -1) {
       snprintf(response, BUFFER_SIZE,
@@ -197,13 +198,7 @@ void build_http_response(char *response, size_t *response_len) {
   *response_len = strlen(response);
   memcpy(response, header, strlen(header));
   *response_len += strlen(header);
-  /*
-    // copy file to response buffer
-    ssize_t bytes_read;
-    while ((bytes_read = read(file_fd, response + *response_len,
-                              BUFFER_SIZE - *response_len)) > 0) {
-      *response_len += bytes_read;
-    }*/
+
   free(header);
   // close(file_fd);
 }
