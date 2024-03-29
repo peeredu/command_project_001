@@ -4,7 +4,7 @@ int main(void) {
   int client_socket_FD = create_tcp_ip_v4_socket();
 
   char *ip = "127.0.0.1";
-  struct sockaddr_in *server_address = create_ip_v4_address(ip, 2000);
+  struct sockaddr_in *server_address = create_ip_v4_address(ip, PORT);
 
   // connect
   int result = connect(client_socket_FD, (struct sockaddr *)server_address,

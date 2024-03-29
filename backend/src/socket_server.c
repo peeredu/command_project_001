@@ -4,8 +4,12 @@ int main(void) {
   // running server
   int server_socket_FD =
       create_tcp_ip_v4_socket(); // получаем сокет (дескриптор)
+  int reuse = 1;
+  if (setsockopt(server_socket_FD, SOL_SOCKET, SO_REUSEADDR,
+                 (const char *)&reuse, sizeof(reuse)) < 0)
+    perror("setsockopt(SO_REUSEADDR) failed");
   struct sockaddr_in *server_address = create_ip_v4_address(
-      "", 2000); // задаём адрес и порт для входящих соединений, "" - это
+      "", PORT); // задаём адрес и порт для входящих соединений, "" - это
                  // означает "все адреса"
   int result =
       bind(server_socket_FD, (struct sockaddr *)server_address,
@@ -17,6 +21,7 @@ int main(void) {
     free(server_address);
     return 1;
   }
+
   int listen_result =
       listen(server_socket_FD,
              10); // запускаем прослушивание сокета с очередью на 10 запросов
