@@ -22,4 +22,4 @@ services:
 
     # прописываем общую директорию для того что бы при перезапуске контейнера сохранились данные базы данных
     volumes:
-        - ./docker/db_data/:/var/lib/mysql
+        - ./data/docker/db_data/:/var/lib/mysql
