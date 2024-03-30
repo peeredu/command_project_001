@@ -18,8 +18,8 @@
 (таблица хранит детали заказа)
 #### Поля:
 + OrderDetailsId (pk) (auto-generate)
-+ OrderId
-+ ProductID
-+ UnitPrice
-+ Quantity
++ OrderId int
++ ProductID int
++ UnitPrice money
++ Quantity int
 
