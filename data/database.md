@@ -9,7 +9,7 @@
 ## Таблица 2: Products
 (таблица хранит различные продукты)
 #### Поля:
-+ ProductID int (pk) (auto-generate)
++ ProductId int (pk) (auto-generate)
 + ProductName str
 + UnitPrice money
 + Quantity int
@@ -17,9 +17,9 @@
 ## Таблица 3: OrderDetails
 (таблица хранит детали заказа)
 #### Поля:
-+ OrderDetailsId (pk) (auto-generate)
-+ OrderId int
-+ ProductID int
++ OrderDetailId (pk) (auto-generate)
++ OrderId (fk)
++ ProductId (fk)
 + UnitPrice money
 + Quantity int
 
