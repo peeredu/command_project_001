@@ -14,7 +14,7 @@ export default {
         { title: "Заказы", link: "/orders" },
         { title: "Товары", link: "/items" },
         { title: "Добавить заказ", link: "#" },
-        { title: "Добавить товар", link: "#" },
+        { title: "Добавить товар", link: "/new_item" },
         { title: "Найти товар", link: "/find_item" },
         { title: "Найти заказ", link: "/find_order" },
       ],
