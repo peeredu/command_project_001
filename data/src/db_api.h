@@ -4,7 +4,7 @@
 #include <mysql/mysql.h>
 #include <stdio.h>
 
-#define DB_HOST "172.0.0.1"
+#define DB_HOST "172.17.0.1"
 #define DB_USER "root"
 #define DB_PASSWORD "root"
 #define DB_NAME "shop"
