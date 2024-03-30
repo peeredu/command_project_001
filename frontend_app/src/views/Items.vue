@@ -1,6 +1,8 @@
 <template>
   <item-list v-bind:items="items"></item-list>
-  <link-button class='btn' v-bind:service="button_data"></link-button>
+  <div class="btn">
+    <link-button v-bind:service="button_data"></link-button>
+  </div>
 </template>
 
 <script>
@@ -14,37 +16,31 @@ export default {
   },
   data() {
     return {
-      items: [
-        { name: "Картофель", price: 40, quantity: 80, in_stock: true },
-        {
-          name: "Сырок глазированный",
-          price: 80,
-          quantity: 13,
-          in_stock: true,
-        },
-        { name: "Кока кола", price: 240, quantity: 0, in_stock: false },
-      ],
+      items: [],
       button_data: {
         title: "Назад",
         link: "/",
       },
     };
   },
-  // methods: {
-  //     async getItems() {
-  //         axios
-  //             .get('/items')
-  //             .then((response) => {
-  //                 this.items = response.data;
-  //             })
-  //     }
-  // },
+  methods: {
+    async getItems() {
+      axios.get("http://localhost:2000/items").then((response) => {
+        this.items = response.data;
+      });
+    },
+  },
+  beforeMount() {
+    this.getItems();
+  },
 };
 </script>
 
 <style>
 .btn {
-    margin-right: auto;
-    margin-left: auto;
+  width: 600px;
+  display: flex;
+  margin-right: auto;
+  margin-left: auto;
 }
 </style>
