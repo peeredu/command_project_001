@@ -40,33 +40,6 @@ struct AcceptedSocket *accept_incoming_connection(int server_socket_FD) {
   return accepted_socket;
 }
 
-void *receive_and_process_incoming_data(void *socketFD) {
-  char buffer[1024];
-
-  int accepted_socket_FD = *(int *)socketFD;
-  printf("Debug: thread entered\n");
-  printf("Debug: accepted_socket_FD: %d\n", accepted_socket_FD);
-  while (true) {
-    ssize_t amountRceived = recv(accepted_socket_FD, buffer, 1024, 0);
-    if (amountRceived > 0) {
-      buffer[amountRceived] = '\0';
-      printf("Response: %s\n", buffer);
-    } else if (amountRceived == 0) {
-      printf("client disconnected\n");
-      break;
-    } else {
-      printf("error: %s\n", strerror(errno));
-      break;
-    }
-    // send response back
-    char *message;
-    message = "{\" id \": \" Quality \"}";
-    send(accepted_socket_FD, message, strlen(message), 0);
-  }
-  close(accepted_socket_FD);
-  return NULL;
-}
-
 void start_accept_incoming_connections(int server_socket_FD) {
   while (true) {
     struct AcceptedSocket *clientSocket =
@@ -81,10 +54,83 @@ void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
   int accepted_socket_FD =
       ((struct AcceptedSocket *)pSocket)->accepted_socket_FD;
   printf("Debug: accepted_socket_FD: %d\n", accepted_socket_FD);
-  pthread_create(&id, NULL, receive_and_process_incoming_data,
-                 &accepted_socket_FD);
-
+  //   pthread_create(&id, NULL, receive_and_process_incoming_data,
+  //   &accepted_socket_FD);
+  pthread_create(&id, NULL, handle_client, &accepted_socket_FD);
   free(pSocket);
 
+  return NULL;
+}
+
+void build_http_response(char *response, size_t *response_len) {
+  // build HTTP header
+  char *header = (char *)malloc(BUFFER_SIZE * sizeof(char));
+  char *contetnt = "{\"success\": \"true\"}";
+  int contetnt_len = strlen(contetnt);
+
+  snprintf(header, BUFFER_SIZE,
+           "HTTP/1.1 200 OK\r\n"
+           "Content-Type: application/json\r\n"
+           "Content-Length: %d\r\n"
+           "\r\n"
+           "%s",
+           contetnt_len, contetnt);
+
+  // copy header to response buffer
+  *response_len = strlen(response);
+  memcpy(response, header, strlen(header));
+  *response_len += strlen(header);
+
+  free(header);
+  // close(file_fd);
+}
+
+int parse_http_request(char *request, Request *parsed_request) {
+
+  // TODO: parse request
+  printf("Debug: start parsing request\n Request: %s\n", request);
+  // Template
+  parsed_request->method = "GET";
+  parsed_request->path = "/";
+  parsed_request->http_version = "HTTP/1.1";
+  parsed_request->header = "Host:localhost\r\n\r\n";
+  parsed_request->body = "";
+  printf("Debug: end parsing request\n");
+
+  return 0;
+}
+
+void *handle_client(void *arg) {
+  int client_fd = *((int *)arg);
+  printf("Debug: client_fd: %d\n", client_fd);
+  char *buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
+
+  // receive request data from client and store into buffer
+  ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
+  if (bytes_received > 0) {
+    // TODO: parse request data and extract path
+    Request parsed_request;
+    parse_http_request(buffer, &parsed_request);
+
+    // build HTTP response
+    char *response = (char *)malloc(BUFFER_SIZE * 2 * sizeof(char));
+    size_t response_len;
+    printf("Debug: start building response\n");
+
+    // TODO: update build_http_response(response, &response_len); for different
+    // requests
+    build_http_response(response, &response_len);
+
+    // send HTTP response to client
+
+    printf("Debug: start sending response\n");
+    send(client_fd, response, response_len, 0);
+
+    free(response);
+
+    // regfree(&regex);
+  }
+  close(client_fd);
+  free(buffer);
   return NULL;
 }
