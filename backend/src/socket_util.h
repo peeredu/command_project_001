@@ -27,23 +27,22 @@ struct AcceptedSocket {
     bool accepted_successfully;
 };
 
+typedef struct Request {
+    char *method;
+    char *path;
+    char *http_version;
+    char *header;
+    char *body;
+} Request;
+
+
 int create_tcp_ip_v4_socket(void);
 struct sockaddr_in *create_ip_v4_address(char *ip, int port);
 struct AcceptedSocket *accept_incoming_connection(int server_socket_FD);
-void *receive_and_process_incoming_data(void *socketFD);
 void start_accept_incoming_connections(int server_socket_FD);
 void *receive_and_process_incoming_data_on_separate_thread(void *clientSocket);
 
-const char *get_file_extension(const char *file_name);
-
-const char *get_mime_type(const char *file_ext);
-
-bool case_insensitive_compare(const char *s1, const char *s2);
-
-char *get_file_case_insensitive(const char *file_name);
-
-char *url_decode(const char *src);
-
+int parse_http_request(char *request, Request *parsed_request);
 void build_http_response(char *response, size_t *response_len);
 
 void *handle_client(void *arg);

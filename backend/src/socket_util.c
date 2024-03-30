@@ -85,6 +85,21 @@ void build_http_response(char *response, size_t *response_len) {
   // close(file_fd);
 }
 
+int parse_http_request(char *request, Request *parsed_request) {
+
+  // TODO: parse request
+  printf("Debug: start parsing request\n Request: %s\n", request);
+  // Template
+  parsed_request->method = "GET";
+  parsed_request->path = "/";
+  parsed_request->http_version = "HTTP/1.1";
+  parsed_request->header = "Host:localhost\r\n\r\n";
+  parsed_request->body = "";
+  printf("Debug: end parsing request\n");
+
+  return 0;
+}
+
 void *handle_client(void *arg) {
   int client_fd = *((int *)arg);
   printf("Debug: client_fd: %d\n", client_fd);
@@ -93,8 +108,9 @@ void *handle_client(void *arg) {
   // receive request data from client and store into buffer
   ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
   if (bytes_received > 0) {
-
     // TODO: parse request data and extract path
+    Request parsed_request;
+    parse_http_request(buffer, &parsed_request);
 
     // build HTTP response
     char *response = (char *)malloc(BUFFER_SIZE * 2 * sizeof(char));
