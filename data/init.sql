@@ -9,15 +9,16 @@ CREATE TABLE Orders (
 CREATE TABLE Products (
   ProductId INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   ProductName VARCHAR(50) NOT NULL,
-  UnitPrice NUMERIC(19,4), 
-  Quantity INT  
+  UnitPrice NUMERIC(10,2), 
+  Quantity INT,
+  Active BIT DEFAULT 1  
 );
 
 CREATE TABLE OrderDetails (
   OrderDetailId INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   OrderId INT,
   ProductId INT,
-  UnitPrice NUMERIC(19,4),
+  UnitPrice NUMERIC(10,2),
   Quantity INT,
   CONSTRAINT FK_OrderDetails_Orders
   FOREIGN KEY (OrderId) REFERENCES Orders (OrderId),
@@ -32,6 +33,7 @@ INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('grapefruit', 15
 INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('kiwi', 175.14, 15);
 INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('grapes', 275, 45);
 INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('lemon', 105.24, 64);
+INSERT INTO Products (ProductName, UnitPrice, Quantity, Active) VALUES ('peach', 256.68, 0, 0);
 
 INSERT INTO Orders (OrderDate) VALUES ('2024-02-27T12:34:56');
 INSERT INTO Orders (OrderDate) VALUES ('2024-03-02T09:45:11');
@@ -51,11 +53,13 @@ INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (3, 5,
 
 -- Далее будут приводиться примеры необходимых запросов, которые можно будет копировать
 
+-- SELECT * FROM Products WHERE ProductId=2;
+
 -- SELECT * FROM Products;
 -- SELECT * FROM Orders;
 -- SELECT * FROM OrderDetails;
 
--- DROP TABLE Products;
--- DROP TABLE Orders;
 -- DROP TABLE OrderDetails;
--- DROP DATABASE NewShop;
+-- DROP TABLE Orders;
+-- DROP TABLE Products;
+-- DROP DATABASE shop;
