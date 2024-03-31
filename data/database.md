@@ -13,6 +13,7 @@
 + ProductName str
 + UnitPrice money
 + Quantity int
++ Active boolean
 
 ## Таблица 3: OrderDetails
 (таблица хранит детали заказа)
