@@ -11,7 +11,7 @@ CREATE TABLE Products (
   ProductName VARCHAR(50) NOT NULL,
   UnitPrice NUMERIC(10,2), 
   Quantity INT,
-  Active BIT DEFAULT 1  
+  Active BOOLEAN DEFAULT 1  
 );
 
 CREATE TABLE OrderDetails (
@@ -53,13 +53,21 @@ INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (3, 5,
 
 -- Далее будут приводиться примеры необходимых запросов, которые можно будет копировать
 
--- SELECT * FROM Products WHERE ProductId=2;
+SELECT * FROM Products WHERE ProductId=2;
+SET @id:=1; SELECT * FROM Products WHERE ProductId=@id;
 
--- SELECT * FROM Products;
--- SELECT * FROM Orders;
--- SELECT * FROM OrderDetails;
+SET @name='test3';
+SET @price=66.66;
+SET @quantity=6;
+SET @active=1;
+INSERT INTO Products (ProductName, UnitPrice, Quantity, Active) VALUES (@product_name, @unit_price, @quantity, @active);
 
--- DROP TABLE OrderDetails;
--- DROP TABLE Orders;
--- DROP TABLE Products;
--- DROP DATABASE shop;
+
+SELECT * FROM Products;
+SELECT * FROM Orders;
+SELECT * FROM OrderDetails;
+
+DROP TABLE OrderDetails;
+DROP TABLE Orders;
+DROP TABLE Products;
+DROP DATABASE shop;
