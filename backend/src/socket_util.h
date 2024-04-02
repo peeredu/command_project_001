@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>  // for close
+#include "common/logger.h"
 
 #define BUFFER_SIZE 8192
 #define MAX_RESPONSE_SIZE 8192

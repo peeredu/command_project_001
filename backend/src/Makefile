@@ -8,7 +8,7 @@ all: rebuild check
 rebuild: clean_all socket_server clean
 
 socket_server: clean socket_server.c
-	$(CC) $(CFLAGS) $(EXTRAFLAGS) socket_server.c socket_util.c -o $(BUILD_PATH)socket_server  -lpthread
+	$(CC) $(CFLAGS) $(EXTRAFLAGS) socket_server.c socket_util.c common/logger.c -o $(BUILD_PATH)socket_server  -lpthread
 
 clean_all:
 	rm -rf *.o *.a *.so $(BUILD_PATH)*

@@ -18,17 +18,21 @@ Server server_init(int domain, int service, int protocol,
 
   server.socket = socket(domain, service, protocol);
   if (server.socket == 0) {
+    log_message2("Error", "Failed to create TCP/IP v4 socket...");
     perror("Failed to create TCP/IP v4 socket...");
     exit(EXIT_FAILURE);
   }
 
   if (bind(server.socket, (struct sockaddr *)&server.address,
            sizeof(server.address)) < 0) {
+
+    log_message2("Error", "Failed to bind socket...");
     perror("Failed to bind socket...");
     exit(EXIT_FAILURE);
   }
 
   if (listen(server.socket, server.backlog) < 0) {
+    log_message2("Error:", "Failed to start listening...");
     perror("Failed to start listening...");
     exit(EXIT_FAILURE);
   }
@@ -53,6 +57,7 @@ struct AcceptedSocket *accept_incoming_connection(int server_socket_FD) {
   if (!accepted_socket->accepted_successfully) {
     accepted_socket->error = clientSocketFD;
   }
+  log_message2("Server", "Connection accepted.");
   return accepted_socket;
 }
 
@@ -66,11 +71,10 @@ void start_accept_incoming_connections(Server *server) {
 
 void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
   pthread_t id;
-  printf("Debug: thread started\n");
   int accepted_socket_FD =
       ((struct AcceptedSocket *)pSocket)->accepted_socket_FD;
-  printf("Debug: accepted_socket_FD: %d\n", accepted_socket_FD);
-
+  log_message2("Server",
+               "Starting new thread for processing client connection...");
   pthread_create(&id, NULL, handle_client, &accepted_socket_FD);
   free(pSocket);
 
@@ -119,11 +123,19 @@ void *handle_client(void *arg) {
   if (bytes_received > 0) {
     // TODO: parse request data and extract path
     Request request_details;
+
+    log_message2("Server", "Parsing request...");
+    log_message2("Request", buffer);
+
+    printf("Debug: start parsing request...\n");
+
     parse_http_request(buffer, &request_details);
 
     // build HTTP response
     char response[MAX_RESPONSE_SIZE] = {0};
     size_t response_len;
+
+    log_message2("Server", "Building response...");
     printf("Debug: start building response\n");
 
     // TODO: update build_http_response(response, &response_len); for different
@@ -131,11 +143,14 @@ void *handle_client(void *arg) {
     build_http_response(response, &response_len);
 
     // send HTTP response to client
-
+    log_message2("Server", "Sending response...");
+    log_message2("Response", response);
     printf("Debug: start sending response\n");
-    send(client_fd, response, response_len, 0);
 
+    send(client_fd, response, response_len, 0);
   }
   close(client_fd);
+  log_message2("Server", "Connection closed.");
+  close_logger();
   return NULL;
 }
