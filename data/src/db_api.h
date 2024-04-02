@@ -13,16 +13,16 @@
 #define DB_TIMEOUT 2  // unsigned int
 #define MAX_NAME_LENGTH 50
 
-typedef struct {
+typedef struct Product {
     int id;
     char name[MAX_NAME_LENGTH];
-    double unit_price;
+    int unit_price;
     int quantity;
     int active;
 } Product;
 
-int db_get_connect(MYSQL *conn);
-int db_add_product(MYSQL *conn, Product product);
+int db_get_connect(MYSQL *const conn);
+int db_add_product( MYSQL *const conn, Product product);
 
 // char *cat_string(char *dest, char *append);
 

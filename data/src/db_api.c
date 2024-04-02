@@ -1,7 +1,7 @@
 #include "db_api.h"
 
 /* Функция установления соединения с БД. Возвращает 0 если соединение установлено */
-int db_get_connect(MYSQL *conn) {
+int db_get_connect(MYSQL *const conn) {
     int error = 0;
     // Получаем дескриптор соединения
     if (!mysql_init(conn)) {
@@ -22,7 +22,7 @@ int db_get_connect(MYSQL *conn) {
 }
 
 /* Функция добавления нового продукта */
-int db_add_product(MYSQL *conn, Product product) {
+int db_add_product(MYSQL *const conn, Product product) {
     int error = 0;
     enum select_params { par_name, par_price, par_quantity, par_active, par_count };
     MYSQL_STMT *stmt;
@@ -38,7 +38,7 @@ int db_add_product(MYSQL *conn, Product product) {
         bind[par_name].buffer_type = MYSQL_TYPE_STRING;
         bind[par_name].buffer = (char *)product.name;
         bind[par_name].buffer_length = strlen(product.name);
-        bind[par_price].buffer_type = MYSQL_TYPE_DOUBLE;
+        bind[par_price].buffer_type = MYSQL_TYPE_LONG;
         bind[par_price].buffer = (char *)&product.unit_price;
         bind[par_quantity].buffer_type = MYSQL_TYPE_LONG;
         bind[par_quantity].buffer = (char *)&product.quantity;
