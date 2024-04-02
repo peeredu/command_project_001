@@ -9,6 +9,7 @@
 #include <netinet/in.h>  // работает с IP-адресами
 #include <pthread.h>
 #include <regex.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>  // for close
+
 #include "common/logger.h"
 
 #define BUFFER_SIZE 8192
@@ -64,5 +66,7 @@ int parse_http_request(char *request, Request *parsed_request);
 void build_http_response(char *response, size_t *response_len);
 
 void *handle_client(void *arg);
+
+void SIGINT_handler(int);
 
 #endif  // _SOCKET_UTIL_H_
