@@ -11,7 +11,7 @@
 #### Поля:
 + ProductId int (pk) (auto-generate)
 + ProductName str
-+ UnitPrice money
++ UnitPrice int
 + Quantity int
 + Active boolean
 
@@ -21,6 +21,6 @@
 + OrderDetailId (pk) (auto-generate)
 + OrderId (fk)
 + ProductId (fk)
-+ UnitPrice money
++ UnitPrice int
 + Quantity int
 
