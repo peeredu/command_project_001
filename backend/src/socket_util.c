@@ -1,5 +1,7 @@
 #include "socket_util.h"
 
+static Server server_p;
+
 Server server_init(int domain, int service, int protocol,
                    unsigned long interface, int port, int backlog,
                    void (*launch)(Server *server)) {
@@ -25,7 +27,6 @@ Server server_init(int domain, int service, int protocol,
 
   if (bind(server.socket, (struct sockaddr *)&server.address,
            sizeof(server.address)) < 0) {
-
     log_message2("Error", "Failed to bind socket...");
     perror("Failed to bind socket...");
     exit(EXIT_FAILURE);
@@ -38,7 +39,7 @@ Server server_init(int domain, int service, int protocol,
   }
 
   server.launch = launch;
-
+  server_p = server;
   return server;
 }
 
@@ -153,4 +154,21 @@ void *handle_client(void *arg) {
   log_message2("Server", "Connection closed.");
   close_logger();
   return NULL;
+}
+
+void SIGINT_handler(int sig) {
+  char c;
+
+  signal(sig, SIG_IGN);
+  printf("\nOUCH, did you hit Ctrl-C?\n"
+         "Do you really want to shutdown server? [y/n] ");
+  c = getchar();
+  if (c == 'y' || c == 'Y') {
+    shutdown(server_p.socket, SHUT_RDWR);
+    close_logger();
+    exit(0);
+  } else {
+    signal(SIGINT, SIGINT_handler);
+  }
+  getchar(); // Get new line character
 }

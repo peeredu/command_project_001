@@ -4,7 +4,6 @@
 
 #define LOG_MESSAGE_BUFFER_SIZE 1024
 
-#include "errors.h"
 void init_logger();
 
 void log_message(const char* message);
