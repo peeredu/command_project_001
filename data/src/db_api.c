@@ -2,6 +2,7 @@
 
 /* Функция установления соединения с БД. Возвращает 0 если соединение установлено */
 int db_get_connect(MYSQL *const conn) {
+
     // Получаем дескриптор соединения
     if (!mysql_init(conn)) {
         fprintf(stderr, "Error: can't create MySQL-descriptor\n");
@@ -16,7 +17,6 @@ int db_get_connect(MYSQL *const conn) {
             return DB_RETURN_ERROR;
         }
     }
-
     return DB_RETURN_OK;
 }
 

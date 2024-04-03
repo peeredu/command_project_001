@@ -1,5 +1,7 @@
 #include "socket_util.h"
 
+static Server server_p;
+
 Server server_init(int domain, int service, int protocol,
                    unsigned long interface, int port, int backlog,
                    void (*launch)(Server *server)) {
@@ -18,23 +20,26 @@ Server server_init(int domain, int service, int protocol,
 
   server.socket = socket(domain, service, protocol);
   if (server.socket == 0) {
+    log_message2("Error", "Failed to create TCP/IP v4 socket...");
     perror("Failed to create TCP/IP v4 socket...");
     exit(EXIT_FAILURE);
   }
 
   if (bind(server.socket, (struct sockaddr *)&server.address,
            sizeof(server.address)) < 0) {
+    log_message2("Error", "Failed to bind socket...");
     perror("Failed to bind socket...");
     exit(EXIT_FAILURE);
   }
 
   if (listen(server.socket, server.backlog) < 0) {
+    log_message2("Error:", "Failed to start listening...");
     perror("Failed to start listening...");
     exit(EXIT_FAILURE);
   }
 
   server.launch = launch;
-
+  server_p = server;
   return server;
 }
 
@@ -53,6 +58,7 @@ struct AcceptedSocket *accept_incoming_connection(int server_socket_FD) {
   if (!accepted_socket->accepted_successfully) {
     accepted_socket->error = clientSocketFD;
   }
+  log_message2("Server", "Connection accepted.");
   return accepted_socket;
 }
 
@@ -66,11 +72,10 @@ void start_accept_incoming_connections(Server *server) {
 
 void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
   pthread_t id;
-  printf("Debug: thread started\n");
   int accepted_socket_FD =
       ((struct AcceptedSocket *)pSocket)->accepted_socket_FD;
-  printf("Debug: accepted_socket_FD: %d\n", accepted_socket_FD);
-
+  log_message2("Server",
+               "Starting new thread for processing client connection...");
   pthread_create(&id, NULL, handle_client, &accepted_socket_FD);
   free(pSocket);
 
@@ -97,16 +102,38 @@ void build_http_response(char *response, size_t *response_len) {
 }
 
 int parse_http_request(char *request, Request *parsed_request) {
-  // TODO: parse request
-  printf("Debug: start parsing request\n Request: %s\n", request);
-  // Template
-  parsed_request->method = "GET";
-  parsed_request->path = "/";
-  parsed_request->http_version = "HTTP/1.1";
-  parsed_request->header = "Host:localhost\r\n\r\n";
-  parsed_request->body = "";
-  printf("Debug: end parsing request\n");
 
+  int i = 0;
+  char tmp_request[BUFFER_SIZE] = {0};
+  memcpy(tmp_request, request, strlen(request));
+  char *first_line = strtok(tmp_request, "\r\n");
+  char *token = strtok(first_line, " ");
+  
+  while(i < 3) {
+    if (i == 0) {
+      parsed_request->method = token;
+    } else if (i == 1) {
+      parsed_request->path = token;
+    } else if (i == 2) {
+      parsed_request->http_version = token;
+    }
+    i++;
+    token = strtok(NULL, " ");
+  }
+
+  if (strcmp(parsed_request->method, "PUT") || strcmp(parsed_request->method, "POST")) {
+    char tmp_content[BUFFER_SIZE] = {0};
+    memcpy(tmp_content, request, strlen(request));
+    char *current_content = strtok(tmp_content, "\r\n");
+    while (current_content != NULL) {
+      if ((strstr(current_content, "Content-Length"))) {
+        token = strtok(current_content, " ");
+        token = strtok(NULL, " ");
+        parsed_request->length = token;
+      }
+      current_content = strtok(NULL, "\r\n");
+    }
+  }
   return 0;
 }
 
@@ -119,11 +146,19 @@ void *handle_client(void *arg) {
   if (bytes_received > 0) {
     // TODO: parse request data and extract path
     Request request_details;
+
+    log_message2("Server", "Parsing request...");
+    log_message2("Request", buffer);
+
+    printf("Debug: start parsing request...\n");
+
     parse_http_request(buffer, &request_details);
 
     // build HTTP response
     char response[MAX_RESPONSE_SIZE] = {0};
     size_t response_len;
+
+    log_message2("Server", "Building response...");
     printf("Debug: start building response\n");
 
     // TODO: update build_http_response(response, &response_len); for different
@@ -131,11 +166,31 @@ void *handle_client(void *arg) {
     build_http_response(response, &response_len);
 
     // send HTTP response to client
-
+    log_message2("Server", "Sending response...");
+    log_message2("Response", response);
     printf("Debug: start sending response\n");
-    send(client_fd, response, response_len, 0);
 
+    send(client_fd, response, response_len, 0);
   }
   close(client_fd);
+  log_message2("Server", "Connection closed.");
+  close_logger();
   return NULL;
+}
+
+void SIGINT_handler(int sig) {
+  char c;
+
+  signal(sig, SIG_IGN);
+  printf("\nOUCH, did you hit Ctrl-C?\n"
+         "Do you really want to shutdown server? [y/n] ");
+  c = getchar();
+  if (c == 'y' || c == 'Y') {
+    shutdown(server_p.socket, SHUT_RDWR);
+    close_logger();
+    exit(0);
+  } else {
+    signal(SIGINT, SIGINT_handler);
+  }
+  getchar(); // Get new line character
 }
