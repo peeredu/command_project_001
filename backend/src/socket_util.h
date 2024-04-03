@@ -31,8 +31,8 @@ typedef struct Request {
     char *method;
     char *path;
     char *http_version;
-    char *header;
     char *body;
+    char *length;
 } Request;
 
 
