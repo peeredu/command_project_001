@@ -1,25 +1,46 @@
 #include "socket_util.h"
 
-int create_tcp_ip_v4_socket(void) {
-  int socketFD;
-  socketFD = socket(AF_INET, SOCK_STREAM, 0);
-  if (socketFD == -1) {
-    printf("error: %s\n", strerror(errno));
-    return -1;
-  }
-  return socketFD;
-}
+static Server server_p;
 
-struct sockaddr_in *create_ip_v4_address(char *ip, int port) {
-  struct sockaddr_in *address;
-  address = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
-  address->sin_family = AF_INET;
-  address->sin_port = htons(port);
-  if (strlen(ip) == 0)
-    address->sin_addr.s_addr = htonl(INADDR_ANY);
-  else
-    inet_pton(AF_INET, ip, &address->sin_addr);
-  return address;
+Server server_init(int domain, int service, int protocol,
+                   unsigned long interface, int port, int backlog,
+                   void (*launch)(Server *server)) {
+  Server server;
+
+  server.domain = domain;
+  server.service = service;
+  server.protocol = protocol;
+  server.interface = interface;
+  server.port = port;
+  server.backlog = backlog;
+
+  server.address.sin_family = domain;
+  server.address.sin_port = htons(port);
+  server.address.sin_addr.s_addr = htonl(interface);
+
+  server.socket = socket(domain, service, protocol);
+  if (server.socket == 0) {
+    log_message2("Error", "Failed to create TCP/IP v4 socket...");
+    perror("Failed to create TCP/IP v4 socket...");
+    exit(EXIT_FAILURE);
+  }
+
+  if (bind(server.socket, (struct sockaddr *)&server.address,
+           sizeof(server.address)) < 0) {
+    log_message2("Error", "Failed to bind socket...");
+    perror("Failed to bind socket...");
+    exit(EXIT_FAILURE);
+  }
+
+  if (listen(server.socket, server.backlog) < 0) {
+    log_message2("Error:", "Failed to start listening...");
+    perror("Failed to start listening...");
+    exit(EXIT_FAILURE);
+  }
+
+  server.launch = launch;
+  server_p = server;
+  return server;
 }
 
 struct AcceptedSocket *accept_incoming_connection(int server_socket_FD) {
@@ -37,25 +58,24 @@ struct AcceptedSocket *accept_incoming_connection(int server_socket_FD) {
   if (!accepted_socket->accepted_successfully) {
     accepted_socket->error = clientSocketFD;
   }
+  log_message2("Server", "Connection accepted.");
   return accepted_socket;
 }
 
-void start_accept_incoming_connections(int server_socket_FD) {
+void start_accept_incoming_connections(Server *server) {
   while (true) {
     struct AcceptedSocket *clientSocket =
-        accept_incoming_connection(server_socket_FD);
+        accept_incoming_connection(server->socket);
     receive_and_process_incoming_data_on_separate_thread(clientSocket);
   }
 }
 
 void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
   pthread_t id;
-  printf("Debug: thread started\n");
   int accepted_socket_FD =
       ((struct AcceptedSocket *)pSocket)->accepted_socket_FD;
-  printf("Debug: accepted_socket_FD: %d\n", accepted_socket_FD);
-  //   pthread_create(&id, NULL, receive_and_process_incoming_data,
-  //   &accepted_socket_FD);
+  log_message2("Server",
+               "Starting new thread for processing client connection...");
   pthread_create(&id, NULL, handle_client, &accepted_socket_FD);
   free(pSocket);
 
@@ -64,25 +84,21 @@ void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
 
 void build_http_response(char *response, size_t *response_len) {
   // build HTTP header
-  char *header = (char *)malloc(BUFFER_SIZE * sizeof(char));
-  char *contetnt = "{\"success\": \"true\"}";
-  int contetnt_len = strlen(contetnt);
+  char header[MAX_HEADER_SIZE] = {0};
+  char *content = "{\"success\": \"true\"}";
+  int content_len = strlen(content);
 
-  snprintf(header, BUFFER_SIZE,
+  snprintf(header, MAX_HEADER_SIZE,
            "HTTP/1.1 200 OK\r\n"
            "Content-Type: application/json\r\n"
            "Content-Length: %d\r\n"
            "\r\n"
            "%s",
-           contetnt_len, contetnt);
+           content_len, content);
 
   // copy header to response buffer
-  *response_len = strlen(response);
   memcpy(response, header, strlen(header));
-  *response_len += strlen(header);
-
-  free(header);
-  // close(file_fd);
+  *response_len = strlen(response);
 }
 
 int parse_http_request(char *request, Request *parsed_request) {
@@ -123,19 +139,26 @@ int parse_http_request(char *request, Request *parsed_request) {
 
 void *handle_client(void *arg) {
   int client_fd = *((int *)arg);
-  printf("Debug: client_fd: %d\n", client_fd);
-  char *buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
+  char buffer[BUFFER_SIZE] = {0};
 
   // receive request data from client and store into buffer
   ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
   if (bytes_received > 0) {
     // TODO: parse request data and extract path
-    Request parsed_request;
-    parse_http_request(buffer, &parsed_request);
+    Request request_details;
+
+    log_message2("Server", "Parsing request...");
+    log_message2("Request", buffer);
+
+    printf("Debug: start parsing request...\n");
+
+    parse_http_request(buffer, &request_details);
 
     // build HTTP response
-    char *response = (char *)malloc(BUFFER_SIZE * 2 * sizeof(char));
+    char response[MAX_RESPONSE_SIZE] = {0};
     size_t response_len;
+
+    log_message2("Server", "Building response...");
     printf("Debug: start building response\n");
 
     // TODO: update build_http_response(response, &response_len); for different
@@ -143,15 +166,31 @@ void *handle_client(void *arg) {
     build_http_response(response, &response_len);
 
     // send HTTP response to client
-
+    log_message2("Server", "Sending response...");
+    log_message2("Response", response);
     printf("Debug: start sending response\n");
+
     send(client_fd, response, response_len, 0);
-
-    free(response);
-
-    // regfree(&regex);
   }
   close(client_fd);
-  free(buffer);
+  log_message2("Server", "Connection closed.");
+  close_logger();
   return NULL;
+}
+
+void SIGINT_handler(int sig) {
+  char c;
+
+  signal(sig, SIG_IGN);
+  printf("\nOUCH, did you hit Ctrl-C?\n"
+         "Do you really want to shutdown server? [y/n] ");
+  c = getchar();
+  if (c == 'y' || c == 'Y') {
+    shutdown(server_p.socket, SHUT_RDWR);
+    close_logger();
+    exit(0);
+  } else {
+    signal(SIGINT, SIGINT_handler);
+  }
+  getchar(); // Get new line character
 }

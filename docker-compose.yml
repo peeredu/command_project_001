@@ -1,0 +1,25 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  # название контейнера
+  db_mysql:  
+    # образ из которого будет развернута
+    image: mysql
+    # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
+    # (this is just an example, not intended to be a production configuration)
+    # command: --default-authentication-plugin=mysql_native_password
+
+    # указывает на то что контейнер будет перезапущен при сбое или перезагрузке сервера
+    restart: always
+    environment:
+      MYSQL_USER: client
+      MYSQL_PASSWORD: client
+      MYSQL_ROOT_PASSWORD: root
+
+    ports:
+      - "3306:3306" 
+
+    # прописываем общую директорию для того что бы при перезапуске контейнера сохранились данные базы данных
+    volumes:
+        - ./data/docker/db_data/:/var/lib/mysql
