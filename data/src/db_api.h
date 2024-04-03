@@ -13,7 +13,6 @@
 #define DB_NAME "shop"
 #define DB_PORT 0
 #define DB_TIMEOUT 2  // unsigned int
-#define MAX_NAME_LENGTH 50
 
 #define DB_RETURN_OK 0
 #define DB_RETURN_ERROR 1
@@ -21,5 +20,6 @@
 int db_get_connect(MYSQL *conn);
 int db_add_product(MYSQL *conn, Product product);
 int db_remove_product(MYSQL *conn, const int id);
+int db_get_product(MYSQL *conn, Product *product, const int id);
 
 #endif  // DB_API
