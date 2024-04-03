@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "db_models.h"
+
 #define DB_HOST "172.17.0.1"
 #define DB_USER "root"
 #define DB_PASSWORD "root"
@@ -13,17 +15,11 @@
 #define DB_TIMEOUT 2  // unsigned int
 #define MAX_NAME_LENGTH 50
 
-typedef struct Product {
-    int id;
-    char name[MAX_NAME_LENGTH];
-    int unit_price;
-    int quantity;
-    int active;
-} Product;
+#define DB_RETURN_OK 0
+#define DB_RETURN_ERROR 1
 
-int db_get_connect(MYSQL *const conn);
-int db_add_product( MYSQL *const conn, Product product);
+int db_get_connect(MYSQL *conn);
+int db_add_product(MYSQL *conn, Product product);
+int db_remove_product(MYSQL *conn, const int id);
 
-// char *cat_string(char *dest, char *append);
-
-#endif // DB_API
+#endif  // DB_API
