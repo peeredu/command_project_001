@@ -87,16 +87,37 @@ void build_http_response(char *response, size_t *response_len) {
 
 int parse_http_request(char *request, Request *parsed_request) {
 
-  // TODO: parse request
-  printf("Debug: start parsing request\n Request: %s\n", request);
-  // Template
-  parsed_request->method = "GET";
-  parsed_request->path = "/";
-  parsed_request->http_version = "HTTP/1.1";
-  parsed_request->header = "Host:localhost\r\n\r\n";
-  parsed_request->body = "";
-  printf("Debug: end parsing request\n");
+  int i = 0;
+  char tmp_request[BUFFER_SIZE] = {0};
+  memcpy(tmp_request, request, strlen(request));
+  char *first_line = strtok(tmp_request, "\r\n");
+  char *token = strtok(first_line, " ");
+  
+  while(i < 3) {
+    if (i == 0) {
+      parsed_request->method = token;
+    } else if (i == 1) {
+      parsed_request->path = token;
+    } else if (i == 2) {
+      parsed_request->http_version = token;
+    }
+    i++;
+    token = strtok(NULL, " ");
+  }
 
+  if (strcmp(parsed_request->method, "PUT") || strcmp(parsed_request->method, "POST")) {
+    char tmp_content[BUFFER_SIZE] = {0};
+    memcpy(tmp_content, request, strlen(request));
+    char *current_content = strtok(tmp_content, "\r\n");
+    while (current_content != NULL) {
+      if ((strstr(current_content, "Content-Length"))) {
+        token = strtok(current_content, " ");
+        token = strtok(NULL, " ");
+        parsed_request->length = token;
+      }
+      current_content = strtok(NULL, "\r\n");
+    }
+  }
   return 0;
 }
 
