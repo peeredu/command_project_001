@@ -52,8 +52,8 @@ typedef struct Request {
     char *method;
     char *path;
     char *http_version;
-    char *header;
     char *body;
+    char *length;
 } Request;
 
 Server server_init(int domain, int service, int protocol, unsigned long interface, int port, int backlog, void (*launch)(Server *server));
