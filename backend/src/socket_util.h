@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <unistd.h>  // for close
 
+#include "json_export.h"
 #include "common/logger.h"
 
 #define BUFFER_SIZE 8192
@@ -63,7 +64,7 @@ void start_accept_incoming_connections(Server *server);
 void *receive_and_process_incoming_data_on_separate_thread(void *clientSocket);
 
 int parse_http_request(char *request, Request *parsed_request);
-void build_http_response(char *response, size_t *response_len);
+void build_http_response(Request parsed_request, char *response, size_t *response_len);
 
 void *handle_client(void *arg);
 

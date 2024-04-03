@@ -5,10 +5,13 @@ EXTRAFLAGS=#-fsanitize=leak -fsanitize=address -fsanitize=undefined -fsanitize=u
 
 all: rebuild check 
 
-rebuild: clean_all socket_server clean
+rebuild: socket_server json_export_test clean
 
 socket_server: clean socket_server.c
 	$(CC) $(CFLAGS) $(EXTRAFLAGS) socket_server.c socket_util.c common/logger.c -o $(BUILD_PATH)socket_server  -lpthread
+
+json_export_test: clean tests/json_export_test.c
+	$(CC) $(CFLAGS) $(EXTRAFLAGS) tests/json_export_test.c json_export.c -o $(BUILD_PATH)json_export_test
 
 clean_all:
 	rm -rf *.o *.a *.so $(BUILD_PATH)*
