@@ -14,8 +14,11 @@
 #define DB_PORT 0
 #define DB_TIMEOUT 2  // unsigned int
 
+#define DB_RETURN_OK 0
+#define DB_RETURN_ERROR 1
+
 int db_get_connect(MYSQL *conn);
 int db_add_product(MYSQL *conn, Product product);
-int db_remote_product(MYSQL *conn, const int id);
+int db_remove_product(MYSQL *conn, const int id);
 
 #endif  // DB_API
