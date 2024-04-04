@@ -82,13 +82,25 @@ void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
   return NULL;
 }
 
-void build_http_response(char *response, size_t *response_len) {
+void build_http_response(Request parsed_request, char *response,
+                         size_t *response_len) {
   // build HTTP header
-  char header[MAX_HEADER_SIZE] = {0};
-  char *content = "{\"success\": \"true\"}";
+  char header[MAX_RESPONSE_SIZE] = {0};
+  // TEST ROUTE HARDCODED - REMOVE
+  char content[5000] = {0};
+  if (strcmp("/items", parsed_request.path) == 0) {
+    strcat(content,
+           "{\"items\": [{\"id\": 1,\"name\":\"test\",\"price\": "
+           "100,\"quantity\": 10,\"in_stock\": 1 }, {\"id\": "
+           "2,\"name\":\"test2\",\"price\": 124,\"quantity\": "
+           "3,\"in_stock\": 1 }, {\"id\": 3,\"name\":\"test3\",\"price\": "
+           "223,\"quantity\": 2,\"in_stock\": 1 }]}");
+  } else {
+    strcat(content, "{\"success\":\"true\"}");
+  }
   int content_len = strlen(content);
 
-  snprintf(header, MAX_HEADER_SIZE,
+  snprintf(header, MAX_RESPONSE_SIZE,
            "HTTP/1.1 200 OK\r\n"
            "Content-Type: application/json\r\n"
            "Content-Length: %d\r\n"
@@ -102,14 +114,13 @@ void build_http_response(char *response, size_t *response_len) {
 }
 
 int parse_http_request(char *request, Request *parsed_request) {
-
   int i = 0;
   char tmp_request[BUFFER_SIZE] = {0};
   memcpy(tmp_request, request, strlen(request));
   char *first_line = strtok(tmp_request, "\r\n");
   char *token = strtok(first_line, " ");
-  
-  while(i < 3) {
+
+  while (i < 3) {
     if (i == 0) {
       parsed_request->method = token;
     } else if (i == 1) {
@@ -121,7 +132,8 @@ int parse_http_request(char *request, Request *parsed_request) {
     token = strtok(NULL, " ");
   }
 
-  if (strcmp(parsed_request->method, "PUT") || strcmp(parsed_request->method, "POST")) {
+  if (strcmp(parsed_request->method, "PUT") ||
+      strcmp(parsed_request->method, "POST")) {
     char tmp_content[BUFFER_SIZE] = {0};
     memcpy(tmp_content, request, strlen(request));
     char *current_content = strtok(tmp_content, "\r\n");
@@ -134,6 +146,8 @@ int parse_http_request(char *request, Request *parsed_request) {
       current_content = strtok(NULL, "\r\n");
     }
   }
+  /* TODO: parse path into array 'parsed_request->routes[]' of strings delimited
+   * by '/' */
   return 0;
 }
 
@@ -154,6 +168,13 @@ void *handle_client(void *arg) {
 
     parse_http_request(buffer, &request_details);
 
+    printf("Debug: end parsing request\n");
+    printf("Debug: request method: %s\n", request_details.method);
+    printf("Debug: request path: %s\n", request_details.path);
+    printf("Debug: request http version: %s\n", request_details.http_version);
+    printf("Debug: request length: %s\n", request_details.length);
+    printf("Debug: request body: %s\n", request_details.body);
+
     // build HTTP response
     char response[MAX_RESPONSE_SIZE] = {0};
     size_t response_len;
@@ -163,7 +184,7 @@ void *handle_client(void *arg) {
 
     // TODO: update build_http_response(response, &response_len); for different
     // requests
-    build_http_response(response, &response_len);
+    build_http_response(request_details, response, &response_len);
 
     // send HTTP response to client
     log_message2("Server", "Sending response...");
