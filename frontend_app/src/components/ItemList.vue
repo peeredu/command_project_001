@@ -5,9 +5,9 @@
     <p class="headersLine"><strong>Количество</strong></p>
   </div>
   <div class="itemList" v-for="item in items">
-    <p class="itemListLine" v-for="prop in item">
-      {{ prop }}
-    </p>
+    <p class="itemListLine">Название: {{ item['name'] }}</p>
+    <p class="itemListLine">Cтоимость: {{ item['price'] }} р.</p>
+    <p class="itemListLine">Количество: {{ item['quantity'] }}</p>
   </div>
 </template>
 
