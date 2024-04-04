@@ -20,7 +20,7 @@ const routes = [
         component: Items,
     },
     {
-        path: '/items/:id',
+        path: '/find_item',
         component: SingleItem,
     },
     {
