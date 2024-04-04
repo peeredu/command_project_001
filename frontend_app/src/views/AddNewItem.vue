@@ -1,4 +1,5 @@
 <template>
+    <h3>Добавление товара</h3>
     <div>
         <add-new-item-form></add-new-item-form>
     </div>
