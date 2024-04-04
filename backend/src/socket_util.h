@@ -19,8 +19,9 @@
 #include <sys/types.h>
 #include <unistd.h>  // for close
 
-#include "json_export.h"
+#include "../../data/src/db_models.h"
 #include "common/logger.h"
+#include "json_export.h"
 
 #define BUFFER_SIZE 8192
 #define MAX_RESPONSE_SIZE 8192
@@ -28,43 +29,49 @@
 #define PORT 2000
 
 typedef struct Server {
-    int domain;
-    int service;
-    int protocol;
-    unsigned long interface;
-    int port;
-    int backlog;
+  int domain;
+  int service;
+  int protocol;
+  unsigned long interface;
+  int port;
+  int backlog;
 
-    struct sockaddr_in address;
+  struct sockaddr_in address;
 
-    int socket;
-    
-    void (*launch)(struct Server *server);
+  int socket;
+
+  void (*launch)(struct Server *server);
 } Server;
 
 struct AcceptedSocket {
-    int accepted_socket_FD;
-    struct sockaddr_in address;
-    int error;
-    bool accepted_successfully;
+  int accepted_socket_FD;
+  struct sockaddr_in address;
+  int error;
+  bool accepted_successfully;
 };
 
 typedef struct Request {
-    char *method;
-    char *path;
-    char *http_version;
-    char *body;
-    char *length;
+  char *method;
+  char *path;
+  char *route_0;
+  char *route_1;
+  char *route_2;
+  char *http_version;
+  char *body;
+  char *length;
 } Request;
 
-Server server_init(int domain, int service, int protocol, unsigned long interface, int port, int backlog, void (*launch)(Server *server));
+Server server_init(int domain, int service, int protocol,
+                   unsigned long interface, int port, int backlog,
+                   void (*launch)(Server *server));
 
 struct AcceptedSocket *accept_incoming_connection(int server_socket_FD);
 void start_accept_incoming_connections(Server *server);
 void *receive_and_process_incoming_data_on_separate_thread(void *clientSocket);
 
 int parse_http_request(char *request, Request *parsed_request);
-void build_http_response(Request parsed_request, char *response, size_t *response_len);
+void build_http_response(Request parsed_request, char *response,
+                         size_t *response_len);
 
 void *handle_client(void *arg);
 

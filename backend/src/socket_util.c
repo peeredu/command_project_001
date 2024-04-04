@@ -84,26 +84,58 @@ void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
 
 void build_http_response(Request parsed_request, char *response,
                          size_t *response_len) {
-  // build HTTP header
-  char header[MAX_RESPONSE_SIZE] = {0};
+  printf("Debug: PARSED request\n");
+  printf("Debug: request method: %s\n", parsed_request.method);
+  printf("Debug: request path: %s\n", parsed_request.path);
+  printf("Debug: request route_0: %s\n", parsed_request.route_0);
+  printf("Debug: request route_1: %s\n", parsed_request.route_1);
+  printf("Debug: request route_2: %s\n", parsed_request.route_2);
+  printf("Debug: request http version: %s\n", parsed_request.http_version);
+  printf("Debug: request length: %s\n", parsed_request.length);
+  printf("Debug: request body: %s\n", parsed_request.body);
+
+  char tmp_method[10] = {0};
+  if (parsed_request.method != NULL)
+    strcpy(tmp_method, parsed_request.method);
+  char tmp_path[200] = {0};
+  if (parsed_request.path != NULL)
+    strcpy(tmp_path, parsed_request.path);
+  char tmp_route_0[100] = {0};
+  if (parsed_request.route_0 != NULL)
+    strcpy(tmp_route_0, parsed_request.route_0);
+  char tmp_route_1[100] = {0};
+  if (parsed_request.route_1 != NULL)
+    strcpy(tmp_route_1, parsed_request.route_1);
+  char tm_route_2[100] = {0};
+  if (parsed_request.route_2 != NULL)
+    strcpy(tm_route_2, parsed_request.route_2);
+
+  char content[500] = {0};
+
   // TEST ROUTE HARDCODED - REMOVE
-  char content[5000] = {0};
-  if (strcmp("/items", parsed_request.path) == 0) {
+  if (strcmp("items", tmp_route_0) == 0 && strlen(tmp_route_1) == 0) {
     strcat(content,
            "{\"items\": [{\"id\": 1,\"name\":\"test\",\"price\": "
            "100,\"quantity\": 10,\"in_stock\": 1 }, {\"id\": "
            "2,\"name\":\"test2\",\"price\": 124,\"quantity\": "
            "3,\"in_stock\": 1 }, {\"id\": 3,\"name\":\"test3\",\"price\": "
            "223,\"quantity\": 2,\"in_stock\": 1 }]}");
+  } else if (strcmp("items", tmp_route_0) == 0 && strlen(tmp_route_1) > 0) {
+    
+    strcat(content, "{\"name\": \"Banana\", \"price\": 123, \"quantity\": 32, "
+                    "\"in_stock\": 1}");
   } else {
     strcat(content, "{\"success\":\"true\"}");
   }
   int content_len = strlen(content);
 
+  // build HTTP header
+  char header[MAX_RESPONSE_SIZE] = {0};
   snprintf(header, MAX_RESPONSE_SIZE,
            "HTTP/1.1 200 OK\r\n"
            "Content-Type: application/json\r\n"
            "Content-Length: %d\r\n"
+           "Access-Control-Allow-Origin: *\r\n"
            "\r\n"
            "%s",
            content_len, content);
@@ -146,8 +178,26 @@ int parse_http_request(char *request, Request *parsed_request) {
       current_content = strtok(NULL, "\r\n");
     }
   }
-  /* TODO: parse path into array 'parsed_request->routes[]' of strings delimited
-   * by '/' */
+
+  // Parse routes from path
+  char tmp_path[200] = {0};
+  memcpy(tmp_path, parsed_request->path, strlen(parsed_request->path));
+  char *route_token = strtok(tmp_path, "/");
+  i = 0;
+
+  while (route_token != NULL && i < 3) {
+    // printf("Debug: route token = %s\n", route_token);
+    if (i == 0) {
+      parsed_request->route_0 = route_token;
+    } else if (i == 1) {
+      parsed_request->route_1 = route_token;
+    } else if (i == 2) {
+      parsed_request->route_2 = route_token;
+    }
+    i++;
+    route_token = strtok(NULL, " ");
+  }
+
   return 0;
 }
 
@@ -171,6 +221,9 @@ void *handle_client(void *arg) {
     printf("Debug: end parsing request\n");
     printf("Debug: request method: %s\n", request_details.method);
     printf("Debug: request path: %s\n", request_details.path);
+    printf("Debug: request route_0: %s\n", request_details.route_0);
+    printf("Debug: request route_1: %s\n", request_details.route_1);
+    printf("Debug: request route_2: %s\n", request_details.route_2);
     printf("Debug: request http version: %s\n", request_details.http_version);
     printf("Debug: request length: %s\n", request_details.length);
     printf("Debug: request body: %s\n", request_details.body);
@@ -182,8 +235,8 @@ void *handle_client(void *arg) {
     log_message2("Server", "Building response...");
     printf("Debug: start building response\n");
 
-    // TODO: update build_http_response(response, &response_len); for different
-    // requests
+    // TODO: update build_http_response(response, &response_len); for
+    // different requests
     build_http_response(request_details, response, &response_len);
 
     // send HTTP response to client
