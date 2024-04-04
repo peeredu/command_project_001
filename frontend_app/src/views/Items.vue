@@ -26,7 +26,7 @@ export default {
   methods: {
     async getItems() {
       axios.get("http://localhost:2000/items").then((response) => {
-        this.items = response.data;
+        this.items = response.data['items'];
       });
     },
   },
