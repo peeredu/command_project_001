@@ -177,3 +177,25 @@ int db_get_product(MYSQL *conn, Product *product, const int id) {
 
     return get_product ? DB_RETURN_OK : DB_RETURN_ERROR;
 }
+
+/* Функция возвращает количество товаров */
+int db_get_count_products(MYSQL *conn, int *count) {
+    MYSQL_RES *res;
+    MYSQL_ROW row;
+    if (mysql_query(conn, "SELECT COUNT(*) FROM Products") != 0) {
+        fprintf(stderr, "Error: can't execute SQL-query\n");
+        return DB_RETURN_ERROR;
+    }
+    res = mysql_store_result(conn);
+    if (res == NULL) {
+        fprintf(stderr, "Error: can't get the result description\n");
+        return DB_RETURN_ERROR;
+    }
+    mysql_num_rows(res);        
+    row = mysql_fetch_row(res);
+    sscanf(row[0], "%d", count);
+    
+    mysql_free_result(res);    
+
+    return DB_RETURN_OK;
+}
