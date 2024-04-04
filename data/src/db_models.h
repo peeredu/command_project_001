@@ -20,4 +20,27 @@ typedef struct Products {
     int count;
 } Products;
 
+/* Структура для храниения одной строки из таблицы OrderDetails */
+typedef struct OrderDetail {
+    int OrderDetailId;
+    int OrderId;
+    int ProductId;
+    int UnitPrice;
+    int Quantity;
+} OrderDetail;
+
+/* Структура для хранения одного заказа */
+typedef struct Order {
+    int OrderId;
+    char *OrderDate;
+    OrderDetail *order_details;
+    int count;
+} Order;
+
+/* Структура хранит массив заказов из таблицы Orders */
+typedef struct Orders {
+    Order *orders;
+    int count;
+} Orders;
+
 #endif  // DB_MODELS
