@@ -107,22 +107,45 @@ void build_http_response(Request parsed_request, char *response,
            "223,\"quantity\": 2,\"in_stock\": 1 }]}");
   } else if (strcmp("items", parsed_request.route_0) == 0 &&
              strlen(parsed_request.route_1) > 0) {
-    strcat(content, "{\"name\": \"Banana\", \"price\": 123, \"quantity\": 32, "
-                    "\"in_stock\": 1}");
-    // TEST DB CONNECTION TO GET DATA
-    /*  MYSQL *const conn = NULL;
-      if(db_get_connect(conn)==0)
-      printf("Debug: DB connection success\n");
-      Product product;
-      if (db_get_product(conn, &product, 1) == 0) {
-        printf("Debug: DB connection success\n");
+    // strcat(content, "{\"name\": \"Banana\", \"price\": 123, \"quantity\": 32,
+    // "
+    //                 "\"in_stock\": 1}");
 
-        strcat(content, json_from_product(product));
-      } else {
-        printf("Debug: DB connection failed\n");
-        strcat(content, "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
+    // TEST DB CONNECTION TO GET DATA
+    printf("Debug: DB connection...\n");
+    MYSQL conn;
+    int res = db_get_connect(&conn);
+    if (res == 0)
+      printf("Debug: DB connection success\n");
+    Product product;
+    // parse id from char* route_1
+    int id = strtol(parsed_request.route_1, NULL, 10);
+    if (db_get_product(&conn, &product, id) == 0) {
+      printf("Debug: DB connection success\n");
+
+      char *json = calloc(200, sizeof(char));
+      json = json_from_product(product);
+      strcat(content, json);
+      free(json);
+
+    } else {
+      printf("Debug: DB connection failed\n");
+      strcat(content, "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
                       "\"in_stock\": 0}");
-      }*/
+    }
+
+    // TEST WITHOUT DB CONNECTION
+    /*Product product = {.id = 1,
+                       .name = "Vooodkaaa",
+                       .unit_price = 100,
+                       .quantity = 10,
+                       .active = 1};
+
+    char *json = calloc(200, sizeof(char));
+    json = json_from_product(product);
+    strcat(content, json);
+    free(json);*/
+
   } else {
     strcat(content, "{\"success\":\"true\"}");
   }
