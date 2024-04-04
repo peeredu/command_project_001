@@ -1,12 +1,14 @@
-CREATE DATABASE shop;
+ALTER USER 'root' IDENTIFIED WITH caching_sha2_password BY 'root';
+
+CREATE DATABASE  IF NOT EXISTS shop;
 USE shop;
 
-CREATE TABLE Orders (
+CREATE TABLE IF NOT EXISTS Orders (
    OrderId INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
    OrderDate DATETIME
 );
 
-CREATE TABLE Products (
+CREATE TABLE IF NOT EXISTS Products (
   ProductId INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   ProductName VARCHAR(50) NOT NULL,
   UnitPrice INT, 
@@ -14,7 +16,7 @@ CREATE TABLE Products (
   Active BOOLEAN DEFAULT 1  
 );
 
-CREATE TABLE OrderDetails (
+CREATE TABLE IF NOT EXISTS OrderDetails (
   OrderDetailId INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   OrderId INT,
   ProductId INT,
@@ -25,6 +27,7 @@ CREATE TABLE OrderDetails (
   CONSTRAINT FK_OrderDetails_Products
   FOREIGN KEY (ProductId) REFERENCES Products (ProductId)
 );
+
 
 INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('banana', 12000, 451); 
 INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('orange', 15412, 324);
