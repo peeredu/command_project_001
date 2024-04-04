@@ -20,11 +20,14 @@
 #include <unistd.h>  // for close
 
 #include "../../data/src/db_models.h"
+#include "../../data/src/db_api.h"
 #include "common/logger.h"
 #include "json_export.h"
 
-#define BUFFER_SIZE 8192
-#define MAX_RESPONSE_SIZE 8192
+#define MAX_REQUEST_ATTRIBUTE_SIZE 256
+#define MAX_REQUEST_BODY_SIZE 1024
+#define BUFFER_SIZE 2048
+#define MAX_RESPONSE_SIZE 2048
 #define MAX_HEADER_SIZE 1024
 #define PORT 2000
 
@@ -51,14 +54,14 @@ struct AcceptedSocket {
 };
 
 typedef struct Request {
-  char *method;
-  char *path;
-  char *route_0;
-  char *route_1;
-  char *route_2;
-  char *http_version;
-  char *body;
-  char *length;
+  char method[MAX_REQUEST_ATTRIBUTE_SIZE];
+  char path[MAX_REQUEST_ATTRIBUTE_SIZE];
+  char route_0[MAX_REQUEST_ATTRIBUTE_SIZE];
+  char route_1[MAX_REQUEST_ATTRIBUTE_SIZE];
+  char route_2[MAX_REQUEST_ATTRIBUTE_SIZE];
+  char http_version[MAX_REQUEST_ATTRIBUTE_SIZE];
+  char body[MAX_REQUEST_BODY_SIZE];;
+  char length[MAX_REQUEST_ATTRIBUTE_SIZE];
 } Request;
 
 Server server_init(int domain, int service, int protocol,

@@ -86,44 +86,43 @@ void build_http_response(Request parsed_request, char *response,
                          size_t *response_len) {
   printf("Debug: PARSED request\n");
   printf("Debug: request method: %s\n", parsed_request.method);
-  printf("Debug: request path: %s\n", parsed_request.path);
+  // printf("Debug: request path: %s\n", parsed_request.path);
   printf("Debug: request route_0: %s\n", parsed_request.route_0);
   printf("Debug: request route_1: %s\n", parsed_request.route_1);
-  printf("Debug: request route_2: %s\n", parsed_request.route_2);
-  printf("Debug: request http version: %s\n", parsed_request.http_version);
+  // printf("Debug: request route_2: %s\n", parsed_request.route_2);
+  // printf("Debug: request http version: %s\n", parsed_request.http_version);
   printf("Debug: request length: %s\n", parsed_request.length);
-  printf("Debug: request body: %s\n", parsed_request.body);
-
-  char tmp_method[10] = {0};
-  if (parsed_request.method != NULL)
-    strcpy(tmp_method, parsed_request.method);
-  char tmp_path[200] = {0};
-  if (parsed_request.path != NULL)
-    strcpy(tmp_path, parsed_request.path);
-  char tmp_route_0[100] = {0};
-  if (parsed_request.route_0 != NULL)
-    strcpy(tmp_route_0, parsed_request.route_0);
-  char tmp_route_1[100] = {0};
-  if (parsed_request.route_1 != NULL)
-    strcpy(tmp_route_1, parsed_request.route_1);
-  char tm_route_2[100] = {0};
-  if (parsed_request.route_2 != NULL)
-    strcpy(tm_route_2, parsed_request.route_2);
+  // printf("Debug: request body: %s\n", parsed_request.body);
 
   char content[500] = {0};
 
   // TEST ROUTE HARDCODED - REMOVE
-  if (strcmp("items", tmp_route_0) == 0 && strlen(tmp_route_1) == 0) {
+  if (strcmp("items", parsed_request.route_0) == 0 &&
+      strlen(parsed_request.route_1) == 0) {
     strcat(content,
            "{\"items\": [{\"id\": 1,\"name\":\"test\",\"price\": "
            "100,\"quantity\": 10,\"in_stock\": 1 }, {\"id\": "
            "2,\"name\":\"test2\",\"price\": 124,\"quantity\": "
            "3,\"in_stock\": 1 }, {\"id\": 3,\"name\":\"test3\",\"price\": "
            "223,\"quantity\": 2,\"in_stock\": 1 }]}");
-  } else if (strcmp("items", tmp_route_0) == 0 && strlen(tmp_route_1) > 0) {
-    
+  } else if (strcmp("items", parsed_request.route_0) == 0 &&
+             strlen(parsed_request.route_1) > 0) {
     strcat(content, "{\"name\": \"Banana\", \"price\": 123, \"quantity\": 32, "
                     "\"in_stock\": 1}");
+    // TEST DB CONNECTION TO GET DATA
+    /*  MYSQL *const conn = NULL;
+      if(db_get_connect(conn)==0)
+      printf("Debug: DB connection success\n");
+      Product product;
+      if (db_get_product(conn, &product, 1) == 0) {
+        printf("Debug: DB connection success\n");
+
+        strcat(content, json_from_product(product));
+      } else {
+        printf("Debug: DB connection failed\n");
+        strcat(content, "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
+                      "\"in_stock\": 0}");
+      }*/
   } else {
     strcat(content, "{\"success\":\"true\"}");
   }
@@ -154,11 +153,11 @@ int parse_http_request(char *request, Request *parsed_request) {
 
   while (i < 3) {
     if (i == 0) {
-      parsed_request->method = token;
+      strcpy(parsed_request->method, token);
     } else if (i == 1) {
-      parsed_request->path = token;
+      strcpy(parsed_request->path, token);
     } else if (i == 2) {
-      parsed_request->http_version = token;
+      strcpy(parsed_request->http_version, token);
     }
     i++;
     token = strtok(NULL, " ");
@@ -171,9 +170,8 @@ int parse_http_request(char *request, Request *parsed_request) {
     char *current_content = strtok(tmp_content, "\r\n");
     while (current_content != NULL) {
       if ((strstr(current_content, "Content-Length"))) {
-        token = strtok(current_content, " ");
-        token = strtok(NULL, " ");
-        parsed_request->length = token;
+        strtok(current_content, " ");
+        strcpy(parsed_request->length, strtok(NULL, " "));
       }
       current_content = strtok(NULL, "\r\n");
     }
@@ -188,14 +186,14 @@ int parse_http_request(char *request, Request *parsed_request) {
   while (route_token != NULL && i < 3) {
     // printf("Debug: route token = %s\n", route_token);
     if (i == 0) {
-      parsed_request->route_0 = route_token;
+      strcpy(parsed_request->route_0, route_token);
     } else if (i == 1) {
-      parsed_request->route_1 = route_token;
+      strcpy(parsed_request->route_1, route_token);
     } else if (i == 2) {
-      parsed_request->route_2 = route_token;
+      strcpy(parsed_request->route_2, route_token);
     }
     i++;
-    route_token = strtok(NULL, " ");
+    route_token = strtok(NULL, "/");
   }
 
   return 0;
@@ -220,13 +218,14 @@ void *handle_client(void *arg) {
 
     printf("Debug: end parsing request\n");
     printf("Debug: request method: %s\n", request_details.method);
-    printf("Debug: request path: %s\n", request_details.path);
+    // printf("Debug: request path: %s\n", request_details.path);
     printf("Debug: request route_0: %s\n", request_details.route_0);
     printf("Debug: request route_1: %s\n", request_details.route_1);
-    printf("Debug: request route_2: %s\n", request_details.route_2);
-    printf("Debug: request http version: %s\n", request_details.http_version);
+    // printf("Debug: request route_2: %s\n", request_details.route_2);
+    // printf("Debug: request http version: %s\n",
+    // request_details.http_version);
     printf("Debug: request length: %s\n", request_details.length);
-    printf("Debug: request body: %s\n", request_details.body);
+    // printf("Debug: request body: %s\n", request_details.body);
 
     // build HTTP response
     char response[MAX_RESPONSE_SIZE] = {0};
