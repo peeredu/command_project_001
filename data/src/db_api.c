@@ -1,7 +1,7 @@
 #include "db_api.h"
 
 /* Функция установления соединения с БД. Возвращает 0 если соединение установлено */
-int db_get_connect(MYSQL *const conn) {
+int db_get_connect(MYSQL *conn) {
     // Получаем дескриптор соединения
     if (!mysql_init(conn)) {
         fprintf(stderr, "Error: can't create MySQL-descriptor\n");
@@ -50,7 +50,7 @@ int db_add_product(MYSQL *const conn, Product product) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
     }
-    if (mysql_stmt_close(stmt)) DB_RETURN_ERROR;
+    if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
     return DB_RETURN_OK;
 }
 
