@@ -191,11 +191,10 @@ int db_get_count_products(MYSQL *conn, int *count) {
         fprintf(stderr, "Error: can't get the result description\n");
         return DB_RETURN_ERROR;
     }
-    mysql_num_rows(res);        
+    mysql_num_rows(res);
     row = mysql_fetch_row(res);
     sscanf(row[0], "%d", count);
-    
-    mysql_free_result(res);    
+    mysql_free_result(res);
 
     return DB_RETURN_OK;
 }
