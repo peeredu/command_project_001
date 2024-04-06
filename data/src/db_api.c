@@ -206,7 +206,6 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
         fprintf(stderr, "Error: can't get count products\n");
         return DB_RETURN_ERROR;
     }
-    printf("db_get_products count_products=%d\n", count_products);
     arr_products->count = count_products;
     arr_products->products = malloc(arr_products->count * sizeof(Product));
 
