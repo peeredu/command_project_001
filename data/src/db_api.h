@@ -21,6 +21,7 @@ int db_get_connect(MYSQL *conn);
 int db_add_product(MYSQL *conn, Product product);
 int db_remove_product(MYSQL *conn, const int id);
 int db_get_product(MYSQL *conn, Product *product, const int id);
-int db_get_count_products(MYSQL *conn, int *count);
+int db_count_products(MYSQL *conn, int *count);
+int db_get_products(MYSQL *conn, Products *products);
 
 #endif  // DB_API
