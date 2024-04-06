@@ -2,7 +2,7 @@
 
 int main(void) {
   Product product = {
-      .id = 1, .name = "test", .unit_price = 100, .quantity = 10, .active = 1};
+      .product_id = 1, .product_name = "test", .unit_price = 100, .quantity = 10, .active = 1};
 
   char *json = calloc(MAX_PRODUCT_JSON_LENGTH, sizeof(char));
   json = json_from_product(product);
@@ -10,9 +10,9 @@ int main(void) {
   free(json);
 
   Product product2 = {
-      .id = 2, .name = "test2", .unit_price = 124, .quantity = 3, .active = 1};
+      .product_id = 2, .product_name = "test2", .unit_price = 124, .quantity = 3, .active = 1};
   Product product3 = {
-      .id = 3, .name = "test3", .unit_price = 223, .quantity = 2, .active = 1};
+      .product_id = 3, .product_name = "test3", .unit_price = 223, .quantity = 2, .active = 1};
 
   Products products;
 

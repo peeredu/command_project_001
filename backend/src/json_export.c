@@ -5,7 +5,7 @@ char *json_from_product(Product product) {
     sprintf(json,
             "{ \"id\" : %d, \"name\" : \"%s\", \"price\" : %d, \"quantity\" : "
             "%d, \"in_stock\" : %d }",
-            product.id, product.name, product.unit_price, product.quantity, product.active);
+            product.product_id, product.product_name, product.unit_price, product.quantity, product.active);
     return json;
 }
 

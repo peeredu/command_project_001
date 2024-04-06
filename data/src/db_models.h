@@ -5,8 +5,8 @@
 
 /* Структура для хранения строки из таблицы Products */
 typedef struct Product {
-    int id;
-    char name[MAX_NAME_LENGTH];
+    int product_id;
+    char product_name[MAX_NAME_LENGTH];
     int unit_price;
     int quantity;
     int active;
@@ -20,17 +20,17 @@ typedef struct Products {
 
 /* Структура для храниения одной строки из таблицы OrderDetails */
 typedef struct OrderDetail {
-    int OrderDetailId;
-    int OrderId;
-    int ProductId;
-    int UnitPrice;
-    int Quantity;
+    int order_detail_id;
+    int order_id;
+    int product_id;
+    int unit_price;
+    int quantity;
 } OrderDetail;
 
 /* Структура для хранения одного заказа */
 typedef struct Order {
-    int OrderId;
-    char *OrderDate;
+    int order_id;
+    char *order_date;
     OrderDetail *order_details;
     int count;
 } Order;
