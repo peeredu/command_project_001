@@ -2,6 +2,13 @@
 version: '3.1'
 
 services:
+  server:
+    build: ./
+
+    ports:
+      - "2000:2000"
+    depends_on:
+      - db_mysql
   # название контейнера
   db_mysql:  
     # образ из которого будет развернута
@@ -23,3 +30,5 @@ services:
     # прописываем общую директорию для того что бы при перезапуске контейнера сохранились данные базы данных
     volumes:
         - ./data/docker/db_data/:/var/lib/mysql
+  
+  
