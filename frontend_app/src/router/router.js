@@ -1,3 +1,4 @@
+import AddNewItem from '@/views/AddNewItem'
 import Home from '@/views/Home'
 import Items from '@/views/Items'
 import Orders from '@/views/Orders'
@@ -26,6 +27,10 @@ const routes = [
     {
         path: '/orders/:id',
         component: SingleOrder,
+    },
+    {
+        path: '/new_item',
+        component: AddNewItem,
     }
 ]
 

@@ -15,20 +15,18 @@ services:
     image: mysql
     # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
     # (this is just an example, not intended to be a production configuration)
-    # command: --default-authentication-plugin=mysql_native_password
+    command: mysqld --default-authentication-plugin=caching_sha2_password
 
     # указывает на то что контейнер будет перезапущен при сбое или перезагрузке сервера
     restart: always
-    environment:
-      MYSQL_USER: client
-      MYSQL_PASSWORD: client
-      MYSQL_ROOT_PASSWORD: root
+    environment:      
+      MYSQL_ROOT_PASSWORD: root      
 
     ports:
       - "3306:3306" 
 
     # прописываем общую директорию для того что бы при перезапуске контейнера сохранились данные базы данных
-    volumes:
+    volumes:    
         - ./data/docker/db_data/:/var/lib/mysql
-  
-  
+        # строка включается для инициализации тестовой бд при старте докер контейнера
+        # - ./data/docker/init:/docker-entrypoint-initdb.d    
