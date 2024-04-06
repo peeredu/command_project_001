@@ -9,6 +9,7 @@ services:
       - "2000:2000"
     depends_on:
       - db_mysql
+    restart: always
   # название контейнера
   db_mysql:  
     # образ из которого будет развернута
@@ -29,4 +30,10 @@ services:
     volumes:    
         - ./data/docker/db_data/:/var/lib/mysql
         # строка включается для инициализации тестовой бд при старте докер контейнера
-        # - ./data/docker/init:/docker-entrypoint-initdb.d    
+        # - ./data/docker/init:/docker-entrypoint-initdb.d
+  fontend:
+    build: ./frontend_app
+    volumes:
+      - ./frontend_app:/frontend_data/
+    ports:
+      - "8080:8080"
