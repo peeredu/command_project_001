@@ -6,7 +6,7 @@ ENV MYSQL_ROOT_PASSWORD root
 
 # копируем в контейнер Docker файл инициализации базы данных в директорию /docker-entrypoint-initdb.d 
 # файл docker-entrypoint.sh будет запускать любые файлы в этой директории заканчивающиеся на «.sql»
-ADD init.sql /docker-entrypoint-initdb.d
+ADD ./docker/init/init.sql /docker-entrypoint-initdb.d
 
 # указываем,что порт 3306 необходимо открыть
 EXPOSE 3306
