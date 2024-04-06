@@ -19,8 +19,8 @@
 #include <sys/types.h>
 #include <unistd.h>  // for close
 
-#include "../../data/src/db_models.h"
 #include "../../data/src/db_api.h"
+#include "../../data/src/db_models.h"
 #include "common/logger.h"
 #include "json_export.h"
 
@@ -30,42 +30,47 @@
 #define MAX_RESPONSE_SIZE 2048
 #define MAX_HEADER_SIZE 1024
 #define PORT 2000
+#define DEFAUL_RESPONSE_TEXT                                                \
+    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: " \
+    "18\r\nAccess-Control-Allow-Origin: *\r\n\r\n{\"success\":\"true\"}"
 
 typedef struct Server {
-  int domain;
-  int service;
-  int protocol;
-  unsigned long interface;
-  int port;
-  int backlog;
+    int domain;
+    int service;
+    int protocol;
+    unsigned long interface;
+    int port;
+    int backlog;
 
-  struct sockaddr_in address;
+    struct sockaddr_in address;
 
-  int socket;
+    int socket;
 
-  void (*launch)(struct Server *server);
+    void (*launch)(struct Server *server);
 } Server;
 
 struct AcceptedSocket {
-  int accepted_socket_FD;
-  struct sockaddr_in address;
-  int error;
-  bool accepted_successfully;
+    int accepted_socket_FD;
+    struct sockaddr_in address;
+    int error;
+    bool accepted_successfully;
 };
 
+typedef enum HttpRequestMethod { GET = 0, POST = 1, PUT = 2, PATCH = 3, DELETE = 4 } HttpRequestMethod;
+
 typedef struct Request {
-  char method[MAX_REQUEST_ATTRIBUTE_SIZE];
-  char path[MAX_REQUEST_ATTRIBUTE_SIZE];
-  char route_0[MAX_REQUEST_ATTRIBUTE_SIZE];
-  char route_1[MAX_REQUEST_ATTRIBUTE_SIZE];
-  char route_2[MAX_REQUEST_ATTRIBUTE_SIZE];
-  char http_version[MAX_REQUEST_ATTRIBUTE_SIZE];
-  char body[MAX_REQUEST_BODY_SIZE];;
-  char length[MAX_REQUEST_ATTRIBUTE_SIZE];
+    HttpRequestMethod method;
+    char path[MAX_REQUEST_ATTRIBUTE_SIZE];
+    char route_0[MAX_REQUEST_ATTRIBUTE_SIZE];
+    char route_1[MAX_REQUEST_ATTRIBUTE_SIZE];
+    char route_2[MAX_REQUEST_ATTRIBUTE_SIZE];
+    char http_version[MAX_REQUEST_ATTRIBUTE_SIZE];
+    char body[MAX_REQUEST_BODY_SIZE];
+    ;
+    char length[MAX_REQUEST_ATTRIBUTE_SIZE];
 } Request;
 
-Server server_init(int domain, int service, int protocol,
-                   unsigned long interface, int port, int backlog,
+Server server_init(int domain, int service, int protocol, unsigned long interface, int port, int backlog,
                    void (*launch)(Server *server));
 
 struct AcceptedSocket *accept_incoming_connection(int server_socket_FD);
@@ -73,8 +78,7 @@ void start_accept_incoming_connections(Server *server);
 void *receive_and_process_incoming_data_on_separate_thread(void *clientSocket);
 
 int parse_http_request(char *request, Request *parsed_request);
-void build_http_response(Request parsed_request, char *response,
-                         size_t *response_len);
+void build_http_response(Request parsed_request, char *response, size_t *response_len);
 
 void *handle_client(void *arg);
 
