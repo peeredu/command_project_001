@@ -303,3 +303,63 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
 
     return DB_RETURN_OK;
 }
+
+/* Функция возвращает количество товаров в заказе по id */
+int db_count_order_detalis(MYSQL *conn, int *count, const int id) {
+    enum select_params { par_id, par_count };
+    MYSQL_STMT *stmt;
+    MYSQL_BIND bind[par_count] = {0};
+    MYSQL_RES *prepare_meta_result;
+    stmt = mysql_stmt_init(conn);
+    if (!stmt) return DB_RETURN_ERROR;
+    char *command = "SELECT COUNT(*) FROM OrderDetails WHERE OrderId=?";
+    if (mysql_stmt_prepare(stmt, command, strlen(command))) {
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+
+    bind[par_id].buffer_type = MYSQL_TYPE_LONG;
+    bind[par_id].buffer = (char *)&id;
+
+    if (mysql_stmt_bind_param(stmt, bind)) {
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    if (mysql_stmt_execute(stmt)) {
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    prepare_meta_result = mysql_stmt_result_metadata(stmt);
+    if (!prepare_meta_result) {
+        fprintf(stderr,
+                " mysql_stmt_result_metadata(), \
+           returned no meta information\n");
+        fprintf(stderr, " %s\n", mysql_stmt_error(stmt));
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    if (mysql_num_fields(prepare_meta_result) != 1) {
+        fprintf(stderr, " invalid column count returned by MySQL\n");
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+
+    memset(bind, 0, sizeof(bind));
+    bind[par_id].buffer_type = MYSQL_TYPE_LONG;
+    bind[par_id].buffer = (char *)count;
+
+    if (mysql_stmt_bind_result(stmt, bind)) {
+        fprintf(stderr, " mysql_stmt_bind_result() failed\n");
+        fprintf(stderr, " %s\n", mysql_stmt_error(stmt));
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    !mysql_stmt_fetch(stmt);
+    mysql_free_result(prepare_meta_result);
+    if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+
+    return DB_RETURN_OK;
+}
+
+/* Функция заполняет информацию о заказе по id */
+int db_get_order(MYSQL *conn, Order *order, const int id) { return DB_RETURN_OK; }
