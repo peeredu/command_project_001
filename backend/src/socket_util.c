@@ -94,6 +94,7 @@ void build_http_response(Request parsed_request, char *response, size_t *respons
                 char *json = json_from_products(products);
                 strcat(content, json);
                 free(json);
+                free(products.products);
             } else {
                 printf("Debug: DB connection failed\n");
                 strcat(content,
