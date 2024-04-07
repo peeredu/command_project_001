@@ -29,7 +29,7 @@
 #define BUFFER_SIZE 2048
 #define MAX_RESPONSE_SIZE 2048
 #define MAX_HEADER_SIZE 1024
-#define PORT 2000
+#define DEFAULT_PORT 2000
 #define DEFAUL_RESPONSE_TEXT                                                \
     "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: " \
     "18\r\nAccess-Control-Allow-Origin: *\r\n\r\n{\"success\":\"true\"}"
