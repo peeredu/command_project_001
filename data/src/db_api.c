@@ -34,8 +34,8 @@ int db_add_product(MYSQL *const conn, Product product) {
         return DB_RETURN_ERROR;
     }
     bind[par_name].buffer_type = MYSQL_TYPE_STRING;
-    bind[par_name].buffer = (char *)product.name;
-    bind[par_name].buffer_length = strlen(product.name);
+    bind[par_name].buffer = (char *)product.product_name;
+    bind[par_name].buffer_length = strlen(product.product_name);
     bind[par_price].buffer_type = MYSQL_TYPE_LONG;
     bind[par_price].buffer = (char *)&product.unit_price;
     bind[par_quantity].buffer_type = MYSQL_TYPE_LONG;
@@ -131,13 +131,13 @@ int db_get_product(MYSQL *conn, Product *product, const int id) {
 
     memset(bind, 0, sizeof(bind));
     bind[par_id].buffer_type = MYSQL_TYPE_LONG;
-    bind[par_id].buffer = (char *)&product->id;
+    bind[par_id].buffer = (char *)&product->product_id;
     bind[par_id].is_null = &is_null[par_id];
     bind[par_id].length = &length[par_id];
     bind[par_id].error = &error[par_id];
 
     bind[par_name].buffer_type = MYSQL_TYPE_STRING;
-    bind[par_name].buffer = (char *)&product->name;
+    bind[par_name].buffer = (char *)&product->product_name;
     bind[par_name].buffer_length = MAX_NAME_LENGTH;
     bind[par_name].is_null = &is_null[par_name];
     bind[par_name].length = &length[par_name];
@@ -254,14 +254,14 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
 
         /* Колонка ProductId в таблице Products */
         bind[par_id].buffer_type = MYSQL_TYPE_LONG;
-        bind[par_id].buffer = (char *)&arr_products->products[i].id;
+        bind[par_id].buffer = (char *)&arr_products->products[i].product_id;
         bind[par_id].is_null = &is_null[par_id];
         bind[par_id].length = &length[par_id];
         bind[par_id].error = &error[par_id];
 
         /* Колонка ProductName в таблице Products */
         bind[par_name].buffer_type = MYSQL_TYPE_STRING;
-        bind[par_name].buffer = (char *)&arr_products->products[i].name;
+        bind[par_name].buffer = (char *)&arr_products->products[i].product_name;
         bind[par_name].buffer_length = MAX_NAME_LENGTH;
         bind[par_name].is_null = &is_null[par_name];
         bind[par_name].length = &length[par_name];
