@@ -76,6 +76,9 @@ INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (3, 5,
 -- SET @active=1;
 -- INSERT INTO Products (ProductName, UnitPrice, Quantity, Active) VALUES (@product_name, @unit_price, @quantity, @active);
 
+-- SELECT * FROM Orders O CROSS JOIN OrderDetails OD WHERE O.OrderId=OD.OrderId AND O.OrderId=2;
+-- SELECT * FROM Orders O CROSS JOIN OrderDetails OD WHERE O.OrderId=OD.OrderId AND O.OrderId=?;
+
 -- SELECT * FROM Products;
 -- SELECT * FROM Orders;
 -- SELECT * FROM OrderDetails;
