@@ -17,7 +17,15 @@ int db_get_connect(MYSQL *conn) {
             fprintf(stderr, "Error: %s\n", mysql_error(conn));
             return DB_RETURN_ERROR;
         }
+        // Устанавливаем кодировку соединения. Можно использовать cp1251 чтобы предотвратить искажения
+        // русского текста
+        if (mysql_query(conn, "SET NAMES 'UTF8'") != 0) {
+            // Если кодировку установить невозможно - выводим сообщение об ошибке
+            fprintf(stderr, "Error: can't set character set\n");
+            return DB_RETURN_ERROR;
+        }
     }
+
     return DB_RETURN_OK;
 }
 
@@ -93,6 +101,7 @@ int db_get_product(MYSQL *conn, Product *product, const int id) {
     stmt = mysql_stmt_init(conn);
     if (!stmt) return DB_RETURN_ERROR;
     char *command = "SELECT * FROM Products WHERE ProductId=?";
+    /* Подготавливает оператор SQL */
     if (mysql_stmt_prepare(stmt, command, strlen(command))) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
@@ -224,15 +233,18 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
     }
+    /* Проверяет количество параметров из оператора */
     if (mysql_stmt_param_count(stmt) != 0) {
         fprintf(stderr, " invalid parameter count returned by MySQL\n");
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
     }
+    /* Выполняем запрос SELECT */
     if (mysql_stmt_execute(stmt)) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
     }
+    /* Извлекаем метаинформацию набора результатов */
     prepare_meta_result = mysql_stmt_result_metadata(stmt);
     if (!prepare_meta_result) {
         fprintf(stderr,
@@ -251,14 +263,12 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
 
     for (int i = 0; i < arr_products->count; i++) {
         memset(bind, 0, sizeof(bind));
-
         /* Колонка ProductId в таблице Products */
         bind[par_id].buffer_type = MYSQL_TYPE_LONG;
         bind[par_id].buffer = (char *)&arr_products->products[i].product_id;
         bind[par_id].is_null = &is_null[par_id];
         bind[par_id].length = &length[par_id];
         bind[par_id].error = &error[par_id];
-
         /* Колонка ProductName в таблице Products */
         bind[par_name].buffer_type = MYSQL_TYPE_STRING;
         bind[par_name].buffer = (char *)&arr_products->products[i].product_name;
@@ -266,21 +276,18 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
         bind[par_name].is_null = &is_null[par_name];
         bind[par_name].length = &length[par_name];
         bind[par_name].error = &error[par_name];
-
         /* Колонка UnitPrice в таблице Products */
         bind[par_price].buffer_type = MYSQL_TYPE_LONG;
         bind[par_price].buffer = (char *)&arr_products->products[i].unit_price;
         bind[par_price].is_null = &is_null[par_price];
         bind[par_price].length = &length[par_price];
         bind[par_price].error = &error[par_price];
-
         /* Колонка Quantity в таблице Products */
         bind[par_quantity].buffer_type = MYSQL_TYPE_LONG;
         bind[par_quantity].buffer = (char *)&arr_products->products[i].quantity;
         bind[par_quantity].is_null = &is_null[par_quantity];
         bind[par_quantity].length = &length[par_quantity];
         bind[par_quantity].error = &error[par_quantity];
-
         /* Колонка Active в таблице Products */
         bind[par_active].buffer_type = MYSQL_TYPE_LONG;
         bind[par_active].buffer = (char *)&arr_products->products[i].active;
@@ -294,7 +301,6 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
             mysql_stmt_close(stmt);
             return DB_RETURN_ERROR;
         }
-
         mysql_stmt_fetch(stmt);
     }
 
@@ -304,7 +310,7 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
     return DB_RETURN_OK;
 }
 
-/* Функция возвращает количество товаров в заказе по id */
+/* Функция заполняет количество товаров в заказе по id */
 int db_count_order_detalis(MYSQL *conn, int *count, const int id) {
     enum select_params { par_id, par_count };
     MYSQL_STMT *stmt;
@@ -320,11 +326,12 @@ int db_count_order_detalis(MYSQL *conn, int *count, const int id) {
 
     bind[par_id].buffer_type = MYSQL_TYPE_LONG;
     bind[par_id].buffer = (char *)&id;
-
+    /* Используется для привязки входных данных для маркеров параметров в операторе SQL */
     if (mysql_stmt_bind_param(stmt, bind)) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
     }
+    /* Выполняет подготовленный запрос, связанный с обработчиком инструкций */
     if (mysql_stmt_execute(stmt)) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
@@ -362,4 +369,117 @@ int db_count_order_detalis(MYSQL *conn, int *count, const int id) {
 }
 
 /* Функция заполняет информацию о заказе по id */
-int db_get_order(MYSQL *conn, Order *order, const int id) { return DB_RETURN_OK; }
+int db_get_order(MYSQL *conn, Order *order, const int id) {
+    int count_order = -1;
+    if (db_count_order_detalis(conn, &count_order, id)) {
+        fprintf(stderr, "Error: can't get count order\n");
+        return DB_RETURN_ERROR;
+    }
+    order->count = count_order;
+    order->order_details = malloc(order->count * sizeof(OrderDetail));
+    enum select_params {
+        par_id_1,
+        par_date,
+        par_detail_id,
+        par_id_2,
+        par_prod_id,
+        par_price,
+        par_quantity,
+        par_count
+    };
+    MYSQL_STMT *stmt;
+    MYSQL_BIND bind[par_count] = {0};
+    MYSQL_RES *prepare_meta_result;
+    MYSQL_TIME ts;
+    stmt = mysql_stmt_init(conn);
+    if (!stmt) return DB_RETURN_ERROR;
+    char *command =
+        "SELECT * \
+        FROM Orders O CROSS JOIN OrderDetails OD \
+        WHERE O.OrderId=OD.OrderId AND O.OrderId=?";
+    /* Подготавливает оператор SQL */
+    if (mysql_stmt_prepare(stmt, command, strlen(command))) {
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    bind[par_id_1].buffer_type = MYSQL_TYPE_LONG;
+    bind[par_id_1].buffer = (char *)&id;
+    /* Используется для привязки входных данных для маркеров параметров в операторе SQL */
+    if (mysql_stmt_bind_param(stmt, bind)) {
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    /* Проверяет количество параметров из оператора */
+    if (mysql_stmt_param_count(stmt) != 1) {
+        fprintf(stderr, " invalid parameter count returned by MySQL\n");
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    /* Выполняем запрос SELECT */
+    if (mysql_stmt_execute(stmt)) {
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    /* Извлекаем метаинформацию набора результатов */
+    prepare_meta_result = mysql_stmt_result_metadata(stmt);
+    if (!prepare_meta_result) {
+        fprintf(stderr,
+                " mysql_stmt_result_metadata(), \
+           returned no meta information\n");
+        fprintf(stderr, " %s\n", mysql_stmt_error(stmt));
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    /* Проверяет количество колонок в запросе */
+    if (mysql_num_fields(prepare_meta_result) != 7) {
+        fprintf(stderr, " invalid column count returned by MySQL\n");
+        mysql_stmt_close(stmt);
+        return DB_RETURN_ERROR;
+    }
+    for (int i = 0; i < order->count; i++) {
+        memset(bind, 0, sizeof(bind));
+        /* Колонка OrderId в таблице запроса SELECT */
+        bind[par_id_1].buffer_type = MYSQL_TYPE_LONG;
+        bind[par_id_1].buffer = (char *)&order->order_id;
+        /* Колонка OrderDate в таблице запроса SELECT */
+        bind[par_date].buffer_type = MYSQL_TYPE_TIMESTAMP;
+        bind[par_date].buffer = (char *)&ts;
+        /* Колонка OrderDetailId в таблице запроса SELECT */
+        bind[par_detail_id].buffer_type = MYSQL_TYPE_LONG;
+        bind[par_detail_id].buffer = (char *)&order->order_details[i].order_detail_id;
+        /* Колонка OrderId в таблице запроса SELECT */
+        bind[par_id_2].buffer_type = MYSQL_TYPE_LONG;
+        bind[par_id_2].buffer = (char *)&order->order_details[i].order_id;
+        /* Колонка ProductId в таблице запроса SELECT */
+        bind[par_prod_id].buffer_type = MYSQL_TYPE_LONG;
+        bind[par_prod_id].buffer = (char *)&order->order_details[i].product_id;
+        /* Колонка UnitPrice в таблице запроса SELECT */
+        bind[par_price].buffer_type = MYSQL_TYPE_LONG;
+        bind[par_price].buffer = (char *)&order->order_details[i].unit_price;
+        /* Колонка Quantity в таблице запроса SELECT */
+        bind[par_quantity].buffer_type = MYSQL_TYPE_LONG;
+        bind[par_quantity].buffer = (char *)&order->order_details[i].quantity;
+        if (mysql_stmt_bind_result(stmt, bind)) {
+            fprintf(stderr, " mysql_stmt_bind_result() failed\n");
+            fprintf(stderr, " %s\n", mysql_stmt_error(stmt));
+            mysql_stmt_close(stmt);
+            return DB_RETURN_ERROR;
+        }
+        mysql_stmt_fetch(stmt);
+        db_convert_time_to_string(ts, order->order_date);
+    }
+    mysql_free_result(prepare_meta_result);
+    if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+
+    return DB_RETURN_OK;
+}
+
+/* Функция переводит дату в строку */
+int db_convert_time_to_string(MYSQL_TIME ts, char *str) {
+    char result[MAX_DATE_LENGTH] = {0};
+    snprintf(result, sizeof(result), "%04d-%02d-%02d %02d:%02d:%02d", ts.year, ts.month, ts.day, ts.hour,
+             ts.minute, ts.second);
+    strcpy(str, result);
+
+    return DB_RETURN_OK;
+}

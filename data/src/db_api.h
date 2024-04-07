@@ -25,5 +25,6 @@ int db_count_products(MYSQL *conn, int *count);
 int db_get_products(MYSQL *conn, Products *products);
 int db_count_order_detalis(MYSQL *conn, int *count, const int id);
 int db_get_order(MYSQL *conn, Order *order, const int id);
+int db_convert_time_to_string(MYSQL_TIME ts, char *str);
 
 #endif  // DB_API
