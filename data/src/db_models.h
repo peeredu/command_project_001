@@ -2,6 +2,7 @@
 #define DB_MODELS_H
 
 #define MAX_NAME_LENGTH 50
+#define MAX_DATE_LENGTH 20
 
 /* Структура для хранения строки из таблицы Products */
 typedef struct Product {
@@ -30,7 +31,7 @@ typedef struct OrderDetail {
 /* Структура для хранения одного заказа */
 typedef struct Order {
     int order_id;
-    char *order_date;
+    char order_date[MAX_DATE_LENGTH];
     OrderDetail *order_details;
     int count;
 } Order;
