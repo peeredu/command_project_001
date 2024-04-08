@@ -1,8 +1,16 @@
-GET http://localhost:2000/items HTTP/1.1
+GET http://localhost:2345/items HTTP/1.1
 
 ###
 
-GET http://localhost:2000/items/2 HTTP/1.1
+GET http://localhost:2345/items/2 HTTP/1.1
+
+###
+
+GET http://localhost:2345/orders HTTP/1.1
+
+###
+
+GET http://localhost:2345/orders/id/2 HTTP/1.1
 
 ###
 

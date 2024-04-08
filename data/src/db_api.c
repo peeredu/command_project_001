@@ -361,7 +361,7 @@ int db_count_order_detalis(MYSQL *conn, int *count, const int id) {
         mysql_stmt_close(stmt);
         return DB_RETURN_ERROR;
     }
-    !mysql_stmt_fetch(stmt);
+    mysql_stmt_fetch(stmt);
     mysql_free_result(prepare_meta_result);
     if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
 
