@@ -78,26 +78,29 @@ void *receive_and_process_incoming_data_on_separate_thread(void *pSocket) {
 void build_http_response(Request parsed_request, char *response, size_t *response_len) {
     log_message2("Server", "Building response...");
     printf("Debug: start building response\n");
-    /*printf("Debug: PARSED request\n");
-    printf("Debug: request method: %s\n", parsed_request.method);
-    // printf("Debug: request path: %s\n", parsed_request.path);
-    printf("Debug: request route_0: %s\n", parsed_request.route_0);
-    printf("Debug: request route_1: %s\n", parsed_request.route_1);
-    // printf("Debug: request route_2: %s\n", parsed_request.route_2);
-    // printf("Debug: request http version: %s\n", parsed_request.http_version);
-    printf("Debug: request length: %s\n", parsed_request.length);
-    // printf("Debug: request body: %s\n", parsed_request.body);*/
-    if (parsed_request.method == GET) {
-        char content[500] = {0};
 
-        // TEST ROUTE HARDCODED - REMOVE
+    if (parsed_request.method == GET) {
+        char content[1000] = {0};
+
         if (strcmp("items", parsed_request.route_0) == 0 && strlen(parsed_request.route_1) == 0) {
-            strcat(content,
-                   "{\"items\": [{\"id\": 1,\"name\":\"test\",\"price\": "
-                   "100,\"quantity\": 10,\"in_stock\": 1 }, {\"id\": "
-                   "2,\"name\":\"test2\",\"price\": 124,\"quantity\": "
-                   "3,\"in_stock\": 1 }, {\"id\": 3,\"name\":\"test3\",\"price\": "
-                   "223,\"quantity\": 2,\"in_stock\": 1 }]}");
+            printf("Debug: DB connection...\n");
+            MYSQL conn;
+            int res = db_get_connect(&conn);
+            if (res == 0) printf("Debug: DB connection success\n");
+            Products products;
+            if (db_get_products(&conn, &products) == 0) {
+                printf("Debug: Got products from DB successfully\n");
+
+                char *json = json_from_products(products);
+                strcat(content, json);
+                free(json);
+                free(products.products);
+            } else {
+                printf("Debug: DB connection failed\n");
+                strcat(content,
+                       "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
+                       "\"in_stock\": 0}");
+            }
         } else if (strcmp("items", parsed_request.route_0) == 0 && strlen(parsed_request.route_1) > 0) {
             // TEST DB CONNECTION TO GET DATA
             printf("Debug: DB connection...\n");
@@ -109,7 +112,7 @@ void build_http_response(Request parsed_request, char *response, size_t *respons
             // parse id from char* route_1
             int id = strtol(parsed_request.route_1, NULL, 10);
             if (db_get_product(&conn, &product, id) == 0) {
-                printf("Debug: DB connection success\n");
+                printf("Debug:  Got product from DB successfully\n");
 
                 char *json = json_from_product(product);
                 strcat(content, json);
