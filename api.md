@@ -5,10 +5,10 @@
 - ответ сервера 200: {"name": str, "price": int, "quantity": int, "in_stock": bool}
 - ответ в случае любой ошибки: {"name": NULL, "price": 0, "quantity": 0, "in_stock": NULL}
 
-**/orders/{id}** - показать информацию об отдельном заказе
+**/orders/id/{id}** - показать информацию об отдельном заказе
 
-- ответ сервера 200: {"items_ids": [{id}], "price": int, "date": datetime}
-- ответ в случае любой ошибки: {"items_ids": [], "price": 0, "date": NULL}
+- ответ сервера 200: {"id": int, "date": datetime, "items": [{"id": int, "price": int, "quantity": int}]}
+- ответ в случае любой ошибки: {"id": 0, "date": NULL, "items": []}
 
 **/items** - показать информацию о всех товарах
 
@@ -17,10 +17,10 @@
 
 **/orders** - показать информацию о всех заказах
 
-- ответ сервера 200: {"orders": [{"items_ids": [{id}], "price": int, "date": datetime}]}
+- ответ сервера 200: {"orders": [{"id": int, "date": datetime, "items": [{"id": int, "price": int, "quantity": int}]}]}
 - ответ в случае любой ошибки: {"orders": []}
 
-**/orders/{date}** - показать информацию о всех заказах за определенную дату
+**/orders/date/{date}** - показать информацию о всех заказах за определенную дату
 
 - ответ сервера 200: {"orders": [{"items_ids": [{id}], "price": int, "date": datetime}]}
 - ответ в случае любой ошибки: {"orders": []}

@@ -84,4 +84,8 @@ void *handle_client(void *arg);
 
 void SIGINT_handler(int);
 
+void process_route_get_items(char *content);
+void process_route_get_item_by_id(Request parsed_request, char *content);
+void process_route_get_order_by_id(Request parsed_request, char *content);
+
 #endif  // _SOCKET_UTIL_H_

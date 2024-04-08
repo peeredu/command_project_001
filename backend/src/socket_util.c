@@ -82,60 +82,33 @@ void build_http_response(Request parsed_request, char *response, size_t *respons
     if (parsed_request.method == GET) {
         char content[1000] = {0};
 
+        // GET /items
         if (strcmp("items", parsed_request.route_0) == 0 && strlen(parsed_request.route_1) == 0) {
-            printf("Debug: DB connection...\n");
-            MYSQL conn;
-            int res = db_get_connect(&conn);
-            if (res == 0) printf("Debug: DB connection success\n");
-            Products products;
-            if (db_get_products(&conn, &products) == 0) {
-                printf("Debug: Got products from DB successfully\n");
+            process_route_get_items(content);
 
-                char *json = json_from_products(products);
-                strcat(content, json);
-                free(json);
-                free(products.products);
-            } else {
-                printf("Debug: DB connection failed\n");
-                strcat(content,
-                       "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
-                       "\"in_stock\": 0}");
-            }
+        // GET /items/{id}
         } else if (strcmp("items", parsed_request.route_0) == 0 && strlen(parsed_request.route_1) > 0) {
-            // TEST DB CONNECTION TO GET DATA
-            printf("Debug: DB connection...\n");
-            MYSQL conn;
+            process_route_get_item_by_id(parsed_request, content);
 
-            int res = db_get_connect(&conn);
-            if (res == 0) printf("Debug: DB connection success\n");
-            Product product;
-            // parse id from char* route_1
-            int id = strtol(parsed_request.route_1, NULL, 10);
-            if (db_get_product(&conn, &product, id) == 0) {
-                printf("Debug:  Got product from DB successfully\n");
+        // GET /orders
+        } else if (strcmp("orders", parsed_request.route_0) == 0 && strlen(parsed_request.route_1) == 0) {
+            printf("Not implemented yet: GET /orders\n");
+        }
 
-                char *json = json_from_product(product);
-                strcat(content, json);
-                free(json);
-
-            } else {
-                printf("Debug: DB connection failed\n");
-                strcat(content,
-                       "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
-                       "\"in_stock\": 0}");
-            }
-            // TEST WITHOUT DB CONNECTION
-            /*Product product = {.id = 1,
-                               .name = "Vooodkaaa",
-                               .unit_price = 100,
-                               .quantity = 10,
-                               .active = 1};
-
-            char *json = calloc(200, sizeof(char));
-            json = json_from_product(product);
-            strcat(content, json);
-            free(json);*/
-
+        // GET /orders/id/{id}
+        else if (strcmp("orders", parsed_request.route_0) == 0 && strcmp("id", parsed_request.route_1) == 0 &&
+                 strlen(parsed_request.route_2) > 0) {
+            process_route_get_order_by_id(parsed_request, content);
+        }
+        // GET /orders/max
+        else if (strcmp("orders", parsed_request.route_0) == 0 &&
+                 strcmp("max", parsed_request.route_1) == 0) {
+            printf("Not implemented yet: GET /orders/max\n");
+        }
+        // GET /orders/min
+        else if (strcmp("orders", parsed_request.route_0) == 0 &&
+                 strcmp("min", parsed_request.route_1) == 0) {
+            printf("Not implemented yet: GET /orders/min\n");
         } else {
             strcat(content, "{\"success\":\"true\"}");
         }
@@ -275,4 +248,84 @@ void SIGINT_handler(int sig) {
         signal(SIGINT, SIGINT_handler);
     }
     getchar();  // Get new line character
+}
+
+void process_route_get_items(char *content) {
+    printf("Debug: DB connection...\n");
+    MYSQL conn;
+    int res = db_get_connect(&conn);
+    if (res == 0) printf("Debug: DB connection success\n");
+    Products products;
+    if (db_get_products(&conn, &products) == 0) {
+        printf("Debug: Got products from DB successfully\n");
+
+        char *json = json_from_products(products);
+        strcat(content, json);
+        free(json);
+        free(products.products);
+    } else {
+        printf("Debug: DB connection failed\n");
+        strcat(content,
+               "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
+               "\"in_stock\": 0}");
+    }
+}
+
+void process_route_get_item_by_id(Request parsed_request, char *content) {
+    // TEST DB CONNECTION TO GET DATA
+    printf("Debug: DB connection...\n");
+    MYSQL conn;
+
+    int res = db_get_connect(&conn);
+    if (res == 0) printf("Debug: DB connection success\n");
+    Product product;
+    // parse id from char* route_1
+    int id = strtol(parsed_request.route_1, NULL, 10);
+    if (db_get_product(&conn, &product, id) == 0) {
+        printf("Debug:  Got product from DB successfully\n");
+
+        char *json = json_from_product(product);
+        strcat(content, json);
+        free(json);
+
+    } else {
+        printf("Debug: DB connection failed\n");
+        strcat(content,
+               "{\"name\": \"\", \"price\": 0, \"quantity\": 0, "
+               "\"in_stock\": 0}");
+    }
+    // TEST WITHOUT DB CONNECTION
+    /*Product product = {.id = 1,
+                       .name = "Vooodkaaa",
+                       .unit_price = 100,
+                       .quantity = 10,
+                       .active = 1};
+
+    char *json = calloc(200, sizeof(char));
+    json = json_from_product(product);
+    strcat(content, json);
+    free(json);*/
+}
+
+void process_route_get_order_by_id(Request parsed_request, char *content) {
+    // TEST DB CONNECTION TO GET DATA
+    printf("Debug: DB connection...\n");
+    MYSQL conn;
+
+    int res = db_get_connect(&conn);
+    if (res == 0) printf("Debug: DB connection success\n");
+    Order order;
+    // parse id from char* route_1
+    int id = strtol(parsed_request.route_2, NULL, 10);
+    if (db_get_order(&conn, &order, id) == 0) {
+        printf("Debug:  Got product from DB successfully\n");
+
+        char *json = json_from_order(order);
+        strcat(content, json);
+        free(json);
+
+    } else {
+        printf("Debug: DB connection failed\n");
+        strcat(content, "{\"id\": 0, \"date\": NULL, \"items\": []}");
+    }
 }
