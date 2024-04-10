@@ -1,39 +1,68 @@
-# Use root/example as user/password credentials
-version: '3.1'
+name: command_project
 
 services:
-  server:
-    build: ./
-
+  frontend:
+    build: ./frontend_app
+    volumes:
+      - ./frontend_app:/frontend_data/
     ports:
-      - "2000:2000"
+      - "8080:8080"
+    networks:
+      frontend-network:      
+
+  server:
+    build: ./    
     depends_on:
-      - db_mysql
+      - db_mysql    
     restart: always
+    ports:
+      - "2000:2000"    
+    networks:
+      db-network:
+        ipv4_address: 172.0.0.4
+      frontend-network:        
+
   # название контейнера
   db_mysql:  
     # образ из которого будет развернута
-    image: mysql
+    # image: mysql
+    build:    
+      context: ./data/           
+      args:
+        - MYSQL_DATABASE=${MYSQL_DATABASE}  
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - MYSQL_HOST=${MYSQL_HOST}
+        - MYSQL_PORT=${MYSQL_PORT}
+    env_file: 
+      - .env
     # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
     # (this is just an example, not intended to be a production configuration)
     command: mysqld --default-authentication-plugin=caching_sha2_password
-
     # указывает на то что контейнер будет перезапущен при сбое или перезагрузке сервера
     restart: always
-    environment:      
-      MYSQL_ROOT_PASSWORD: root      
-
-    ports:
-      - "3306:3306" 
+    expose:
+      - "3306" 
+    networks:
+      db-network:
+        ipv4_address: 172.0.0.5
 
     # прописываем общую директорию для того что бы при перезапуске контейнера сохранились данные базы данных
     volumes:    
         - ./data/docker/db_data/:/var/lib/mysql
         # строка включается для инициализации тестовой бд при старте докер контейнера
         # - ./data/docker/init:/docker-entrypoint-initdb.d
-  fontend:
-    build: ./frontend_app
-    volumes:
-      - ./frontend_app:/frontend_data/
-    ports:
-      - "8080:8080"
+
+networks:
+  db-network: 
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.0.0.0/16
+  frontend-network: {}
+
+
+
+#  docker compose up -d --build --force-recreate
+  
