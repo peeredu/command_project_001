@@ -8,7 +8,7 @@
 
 #include "db_models.h"
 
-#define DB_DEFAULT_HOST "172.0.0.5"
+#define DB_DEFAULT_ROOT_HOST "localhost"
 #define DB_DEFAULT_USER "root"
 #define DB_DEFAULT_PASSWORD "root"
 #define DB_DEFAULT_DATABASE "shop"

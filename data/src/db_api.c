@@ -2,17 +2,17 @@
 
 /* Функция установления соединения с БД. Возвращает 0 если соединение установлено */
 int db_get_connect(MYSQL *conn) {
-    char mysql_host[MAX_NAME_LENGTH];
+    char mysql_root_host[MAX_NAME_LENGTH];
     char mysql_user[MAX_NAME_LENGTH];
     char mysql_password[MAX_NAME_LENGTH];
     char mysql_database[MAX_NAME_LENGTH];
     int mysql_port = 0;
 
-    const char *env_mysql_host = getenv("MYSQL_HOST");
-    if (env_mysql_host != NULL)
-        strncpy(mysql_host, env_mysql_host, MAX_NAME_LENGTH - 1);
+    const char *env_mysql_root_host = getenv("MYSQL_ROOT_HOST");
+    if (env_mysql_root_host != NULL)
+        strncpy(mysql_root_host, env_mysql_root_host, MAX_NAME_LENGTH - 1);
     else
-        strcpy(mysql_host, DB_DEFAULT_HOST);
+        strcpy(mysql_root_host, DB_DEFAULT_ROOT_HOST);
 
     const char *env_mysql_user = getenv("MYSQL_USER");
     if (env_mysql_user != NULL)
@@ -34,7 +34,7 @@ int db_get_connect(MYSQL *conn) {
 
     char *env_mysql_port = getenv("MYSQL_PORT");
     if (env_mysql_port != NULL) mysql_port = atoi(env_mysql_port);
-    mysql_port = (mysql_port > 1000) ? mysql_port : DB_DEFAULT_PORT;
+    mysql_port = (mysql_port > 1000) ? mysql_port : DB_DEFAULT_PORT;  
 
     // Получаем дескриптор соединения
     if (!mysql_init(conn)) {
@@ -46,10 +46,9 @@ int db_get_connect(MYSQL *conn) {
         mysql_options(conn, MYSQL_OPT_CONNECT_TIMEOUT, (int *)&db_timeout);
         // mysql_options(conn, MYSQL_REPORT_DATA_TRUNCATION, (bool *)&db_report_truncation);
         // Устанавливаем соединение с базой данных
-        if (!mysql_real_connect(conn, mysql_host, mysql_user, mysql_password, mysql_database, mysql_port,
+        if (!mysql_real_connect(conn, mysql_root_host, mysql_user, mysql_password, mysql_database, mysql_port,
                                 NULL, 0)) {
-            // Если соединение не установлено выводим сообщение об ошибке
-            printf("1\n");
+            // Если соединение не установлено выводим сообщение об ошибке         ;
             fprintf(stderr, "Error: %s\n", mysql_error(conn));
             return DB_RETURN_ERROR;
         }

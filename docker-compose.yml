@@ -8,61 +8,54 @@ services:
     ports:
       - "8080:8080"
     networks:
-      frontend-network:      
+      - frontend-network
 
   server:
-    build: ./    
-    depends_on:
-      - db_mysql    
-    restart: always
-    ports:
-      - "2000:2000"    
-    networks:
-      db-network:
-        ipv4_address: 172.0.0.4
-      frontend-network:        
-
-  # название контейнера
-  db_mysql:  
-    # образ из которого будет развернута
-    # image: mysql
-    build:    
-      context: ./data/           
+    build:
+      context: ./
       args:
-        - MYSQL_DATABASE=${MYSQL_DATABASE}  
+        - MYSQL_DATABASE=${MYSQL_DATABASE} 
         - MYSQL_USER=${MYSQL_USER}
         - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-        - MYSQL_HOST=${MYSQL_HOST}
+        - MYSQL_ROOT_HOST=${MYSQL_ROOT_HOST}
         - MYSQL_PORT=${MYSQL_PORT}
     env_file: 
       - .env
+    depends_on:
+      - db_mysql
+    restart: always
+    ports:
+      - "2000:2000"
+    networks:
+      - db-network
+      - frontend-network
+
+  # название контейнера
+  db_mysql: 
+    build:    
+      context: ./data/ 
     # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
     # (this is just an example, not intended to be a production configuration)
-    command: mysqld --default-authentication-plugin=caching_sha2_password
+    # command: mysqld --default-authentication-plugin=caching_sha2_password
     # указывает на то что контейнер будет перезапущен при сбое или перезагрузке сервера
     restart: always
     expose:
       - "3306" 
+      - "33060"
     networks:
-      db-network:
-        ipv4_address: 172.0.0.5
+      - db-network
 
     # прописываем общую директорию для того что бы при перезапуске контейнера сохранились данные базы данных
     volumes:    
         - ./data/docker/db_data/:/var/lib/mysql
-        # строка включается для инициализации тестовой бд при старте докер контейнера
-        # - ./data/docker/init:/docker-entrypoint-initdb.d
 
 networks:
   db-network: 
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.0.0.0/16
+    external: false
   frontend-network: {}
 
-
-
-#  docker compose up -d --build --force-recreate
-  
+# docker compose up -d --build --force-recreate
+# docker compose exec db_mysql bash
+# docker compose down
