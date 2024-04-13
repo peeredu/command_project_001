@@ -56,7 +56,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE init_OrderDetails()
 BEGIN
-  IF NOT EXISTS (SELECT * FROM Orders LIMIT 1) THEN
+  IF NOT EXISTS (SELECT * FROM OrderDetails LIMIT 1) THEN
     INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 1, 12000, 5);
     INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 3, 9125, 4);
     INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 7, 10524, 1);
