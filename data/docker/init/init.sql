@@ -1,6 +1,4 @@
-ALTER USER 'root' IDENTIFIED WITH caching_sha2_password BY 'root';
-
-CREATE DATABASE  IF NOT EXISTS shop;
+CREATE DATABASE IF NOT EXISTS shop;
 USE shop;
 
 CREATE TABLE IF NOT EXISTS Orders (
@@ -28,31 +26,57 @@ CREATE TABLE IF NOT EXISTS OrderDetails (
   FOREIGN KEY (ProductId) REFERENCES Products (ProductId)
 );
 
+DELIMITER //
+CREATE PROCEDURE init_Products()
+BEGIN
+  IF NOT EXISTS (SELECT * FROM Products LIMIT 1) THEN
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('banana', 12000, 451); 
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('orange', 15412, 324);
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('apple', 9125, 150);
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('grapefruit', 15025, 130);
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('kiwi', 17514, 15);
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('grapes', 27500, 45);
+    INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('lemon', 10524, 64);
+    INSERT INTO Products (ProductName, UnitPrice, Quantity, Active) VALUES ('peach', 25668, 0, 0);
+  END IF;
+END//
+DELIMITER ;
 
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('banana', 12000, 451); 
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('orange', 15412, 324);
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('apple', 9125, 150);
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('grapefruit', 15025, 130);
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('kiwi', 17514, 15);
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('grapes', 27500, 45);
-INSERT INTO Products (ProductName, UnitPrice, Quantity) VALUES ('lemon', 10524, 64);
-INSERT INTO Products (ProductName, UnitPrice, Quantity, Active) VALUES ('peach', 25668, 0, 0);
+DELIMITER //
+CREATE PROCEDURE init_Orders()
+BEGIN
+  IF NOT EXISTS (SELECT * FROM Orders LIMIT 1) THEN
+    INSERT INTO Orders (OrderDate) VALUES ('2024-02-27T12:34:56');
+    INSERT INTO Orders (OrderDate) VALUES ('2024-03-02T09:45:11');
+    INSERT INTO Orders (OrderDate) VALUES ('2024-03-04T14:01:47');
+  END IF;
+END//
+DELIMITER ;
 
-INSERT INTO Orders (OrderDate) VALUES ('2024-02-27T12:34:56');
-INSERT INTO Orders (OrderDate) VALUES ('2024-03-02T09:45:11');
-INSERT INTO Orders (OrderDate) VALUES ('2024-03-04T14:01:47');
+DELIMITER //
+CREATE PROCEDURE init_OrderDetails()
+BEGIN
+  IF NOT EXISTS (SELECT * FROM Orders LIMIT 1) THEN
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 1, 12000, 5);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 3, 9125, 4);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 7, 10524, 1);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 1, 12000, 11);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 2, 15412, 27);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 3, 9125, 7);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 4, 15025, 17);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 6, 27500, 3);
+    INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (3, 5, 17500, 2);
+  END IF;
+END//
+DELIMITER ;
 
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 1, 12000, 5);
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 3, 9125, 4);
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (1, 7, 10524, 1);
+CALL init_Products;
+CALL init_Orders;
+CALL init_OrderDetails;
 
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 1, 12000, 11);
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 2, 15412, 27);
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 3, 9125, 7);
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 4, 15025, 17);
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (2, 6, 27500, 3);
-
-INSERT INTO OrderDetails (OrderId, ProductId, UnitPrice, Quantity) VALUES (3, 5, 17500, 2);
+DROP PROCEDURE IF EXISTS init_Products;
+DROP PROCEDURE IF EXISTS init_Orders;
+DROP PROCEDURE IF EXISTS init_OrderDetails;
 
 -- Далее будут приводиться примеры необходимых запросов, которые можно будет копировать
 
