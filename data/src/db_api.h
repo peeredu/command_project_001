@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "db_logger.h"
 #include "db_models.h"
 
 #define DB_DEFAULT_ROOT_HOST "localhost"
