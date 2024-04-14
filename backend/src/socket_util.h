@@ -56,7 +56,7 @@ struct AcceptedSocket {
     bool accepted_successfully;
 };
 
-typedef enum HttpRequestMethod { GET = 0, POST = 1, PUT = 2, PATCH = 3, DELETE = 4 } HttpRequestMethod;
+typedef enum HttpRequestMethod { GET = 0, POST = 1, PUT = 2, PATCH = 3, DELETE = 4, OPTIONS = 5 } HttpRequestMethod;
 
 typedef struct Request {
     HttpRequestMethod method;
@@ -66,7 +66,7 @@ typedef struct Request {
     char route_2[MAX_REQUEST_ATTRIBUTE_SIZE];
     char http_version[MAX_REQUEST_ATTRIBUTE_SIZE];
     char body[MAX_REQUEST_BODY_SIZE];
-    ;
+    char origin[MAX_REQUEST_ATTRIBUTE_SIZE];
     char length[MAX_REQUEST_ATTRIBUTE_SIZE];
 } Request;
 

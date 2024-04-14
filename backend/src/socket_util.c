@@ -132,6 +132,15 @@ void build_http_response(Request parsed_request, char *response, size_t *respons
         snprintf(response, MAX_RESPONSE_SIZE, DEFAUL_RESPONSE_TEXT);
     } else if (parsed_request.method == DELETE) {
         snprintf(response, MAX_RESPONSE_SIZE, DEFAUL_RESPONSE_TEXT);
+    } else if (parsed_request.method == OPTIONS) {
+        snprintf(response, MAX_RESPONSE_SIZE,
+                 "HTTP/1.1 200 OK\r\n"
+                 "Allow: GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS\r\n"
+                 "Access-Control-Allow-Origin: %s\r\n"
+                 "Access-Control-Allow-Methods: GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS\r\n"
+                 "Access-Control-Allow-Headers: Content-Type\r\n",
+                 parsed_request.origin);
+        *response_len = strlen(response);
     }
 }
 
@@ -154,6 +163,7 @@ int parse_http_request(char *request, Request *parsed_request) {
             if (strcmp(token, "PUT") == 0) parsed_request->method = PUT;
             if (strcmp(token, "PATCH") == 0) parsed_request->method = PATCH;
             if (strcmp(token, "DELETE") == 0) parsed_request->method = DELETE;
+            if (strcmp(token, "OPTIONS") == 0) parsed_request->method = OPTIONS;
         } else if (i == 1) {
             strcpy(parsed_request->path, token);
         } else if (i == 2) {
@@ -163,16 +173,20 @@ int parse_http_request(char *request, Request *parsed_request) {
         token = strtok(NULL, " ");
     }
 
-    if (parsed_request->method == PUT || parsed_request->method == POST) {
-        char tmp_content[BUFFER_SIZE] = {0};
-        memcpy(tmp_content, request, strlen(request));
-        char *current_content = strtok(tmp_content, "\r\n");
-        while (current_content != NULL) {
-            if ((strstr(current_content, "Content-Length"))) {
-                strtok(current_content, " ");
+    if (parsed_request->method == PUT || parsed_request->method == POST || parsed_request->method == OPTIONS) {
+        char head_content[BUFFER_SIZE] = {0};
+        memcpy(head_content, request, strlen(request));
+        char *current_head_content = strtok(head_content, "\r\n");
+        while (current_head_content != NULL) {
+            if (strstr(current_head_content, "Origin")) {
+                strtok(current_head_content, " ");
+                strcpy(parsed_request->origin, strtok(NULL, " "));
+            }
+            if (strstr(current_head_content, "Content-Length")) {
+                strtok(current_head_content, " ");
                 strcpy(parsed_request->length, strtok(NULL, " "));
             }
-            current_content = strtok(NULL, "\r\n");
+            current_head_content = strtok(NULL, "\r\n");
         }
     }
 
@@ -200,7 +214,7 @@ int parse_http_request(char *request, Request *parsed_request) {
 void *handle_client(void *arg) {
     int client_fd = *((int *)arg);
     char buffer[BUFFER_SIZE] = {0};
-
+    
     // receive request data from client and store into buffer
     ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
 
@@ -328,4 +342,11 @@ void process_route_get_order_by_id(Request parsed_request, char *content) {
         printf("Debug: DB connection failed\n");
         strcat(content, "{\"id\": 0, \"date\": NULL, \"items\": []}");
     }
+}
+
+void write_json_in_file(char * json) {
+    FILE *pfile;
+    pfile = fopen("json.json", "w+");
+    fputs(json, pfile);
+    fclose(pfile);
 }
