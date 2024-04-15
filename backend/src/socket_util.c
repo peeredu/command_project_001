@@ -369,7 +369,7 @@ void write_json_in_file(char *json) {
     fclose(pfile);
 }
 
-void parse_json(ParsedProduct *parsed_product, HttpRequestMethod method) {
+void parse_json(Product *parsed_product, HttpRequestMethod method) {
     if (method == POST) {
         JSENSE *string = jse_from_file("body.json");
         strcpy(parsed_product->product_name, jse_get(string, "name"));

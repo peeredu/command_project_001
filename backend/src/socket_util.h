@@ -96,6 +96,6 @@ void process_route_get_items(char *content);
 void process_route_get_item_by_id(Request parsed_request, char *content);
 void process_route_get_order_by_id(Request parsed_request, char *content);
 void write_json_in_file(char *json);
-void parse_json(ParsedProduct *parsed_product, HttpRequestMethod method);
+void parse_json(Product *parsed_product, HttpRequestMethod method);
 
 #endif  // _SOCKET_UTIL_H_
