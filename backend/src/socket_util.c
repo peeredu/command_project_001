@@ -173,7 +173,8 @@ int parse_http_request(char *request, Request *parsed_request) {
         token = strtok(NULL, " ");
     }
 
-    if (parsed_request->method == PUT || parsed_request->method == POST || parsed_request->method == OPTIONS) {
+    if (parsed_request->method == PUT || parsed_request->method == POST ||
+        parsed_request->method == OPTIONS) {
         char head_content[BUFFER_SIZE] = {0};
         memcpy(head_content, request, strlen(request));
         char *current_head_content = strtok(head_content, "\r\n");
@@ -187,6 +188,18 @@ int parse_http_request(char *request, Request *parsed_request) {
                 strcpy(parsed_request->length, strtok(NULL, " "));
             }
             current_head_content = strtok(NULL, "\r\n");
+        }
+    }
+
+    if (parsed_request->method == PUT || parsed_request->method == POST) {
+        char body_content[BUFFER_SIZE] = {0};
+        memcpy(body_content, request, strlen(request));
+        char *current_body_content = strtok(body_content, "\r\n");
+        while (current_body_content != NULL) {
+            if (strstr(current_body_content, "\r\n") == 0) {
+                write_json_in_file(current_body_content);
+            }
+            current_body_content = strtok(NULL, "\r\n");
         }
     }
 
@@ -214,13 +227,18 @@ int parse_http_request(char *request, Request *parsed_request) {
 void *handle_client(void *arg) {
     int client_fd = *((int *)arg);
     char buffer[BUFFER_SIZE] = {0};
-    
+
     // receive request data from client and store into buffer
     ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
 
     if (bytes_received > 0) {
         Request request_details;
         parse_http_request(buffer, &request_details);
+
+        if (fopen("body.json", "r") != NULL) {
+            ParsedProduct parsedproduct = {0};
+            parse_json(&parsedproduct, request_details.method);
+        }
 
         printf("Debug: end parsing request\n");
         printf("Debug: request method: %d\n", request_details.method);
@@ -344,9 +362,23 @@ void process_route_get_order_by_id(Request parsed_request, char *content) {
     }
 }
 
-void write_json_in_file(char * json) {
+void write_json_in_file(char *json) {
     FILE *pfile;
-    pfile = fopen("json.json", "w+");
+    pfile = fopen("body.json", "w+");
     fputs(json, pfile);
     fclose(pfile);
+}
+
+void parse_json(ParsedProduct *parsed_product, HttpRequestMethod method) {
+    if (method == POST) {
+        JSENSE *string = jse_from_file("body.json");
+        strcpy(parsed_product->product_name, jse_get(string, "name"));
+        parsed_product->unit_price = atoi(jse_get(string, "price"));
+        parsed_product->quantity = atoi(jse_get(string, "quantity"));
+        jse_free(string);
+    } else if (method == DELETE) {
+        JSENSE *string = jse_from_file("json.json");
+        strcpy(parsed_product->product_name, jse_get(string, "name"));
+        jse_free(string);
+    }
 }

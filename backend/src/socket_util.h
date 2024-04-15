@@ -23,6 +23,7 @@
 #include "../../data/src/db_models.h"
 #include "common/logger.h"
 #include "json_export.h"
+#include "json_parser/jsense.h"
 
 #define MAX_REQUEST_ATTRIBUTE_SIZE 256
 #define MAX_REQUEST_BODY_SIZE 1024
@@ -56,7 +57,14 @@ struct AcceptedSocket {
     bool accepted_successfully;
 };
 
-typedef enum HttpRequestMethod { GET = 0, POST = 1, PUT = 2, PATCH = 3, DELETE = 4, OPTIONS = 5 } HttpRequestMethod;
+typedef enum HttpRequestMethod {
+    GET = 0,
+    POST = 1,
+    PUT = 2,
+    PATCH = 3,
+    DELETE = 4,
+    OPTIONS = 5
+} HttpRequestMethod;
 
 typedef struct Request {
     HttpRequestMethod method;
@@ -87,5 +95,7 @@ void SIGINT_handler(int);
 void process_route_get_items(char *content);
 void process_route_get_item_by_id(Request parsed_request, char *content);
 void process_route_get_order_by_id(Request parsed_request, char *content);
+void write_json_in_file(char *json);
+void parse_json(ParsedProduct *parsed_product, HttpRequestMethod method);
 
 #endif  // _SOCKET_UTIL_H_
