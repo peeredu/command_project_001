@@ -236,7 +236,7 @@ void *handle_client(void *arg) {
         parse_http_request(buffer, &request_details);
 
         if (fopen("body.json", "r") != NULL) {
-            ParsedProduct parsedproduct = {0};
+            Product parsedproduct = {0};
             parse_json(&parsedproduct, request_details.method);
         }
 

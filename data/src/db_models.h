@@ -4,13 +4,6 @@
 #define MAX_NAME_LENGTH 50
 #define MAX_DATE_LENGTH 20
 
-typedef struct ParsedProduct {
-    int product_id;
-    char product_name[MAX_NAME_LENGTH];
-    int unit_price;
-    int quantity;
-    int active;
-} ParsedProduct;
 
 /* Структура для хранения строки из таблицы Products */
 typedef struct Product {
