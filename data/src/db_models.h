@@ -4,6 +4,7 @@
 #define MAX_NAME_LENGTH 50
 #define MAX_DATE_LENGTH 20
 
+
 /* Структура для хранения строки из таблицы Products */
 typedef struct Product {
     int product_id;

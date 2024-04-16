@@ -1,6 +1,6 @@
 BUILD_PATH=../bin/
 CC=gcc
-CFLAGS=-g -Wall -Wextra -Werror
+CFLAGS=-g -Wall -Wextra -Werror -Wl,--allow-multiple-definition
 EXTRAFLAGS=#-fsanitize=leak -fsanitize=address -fsanitize=undefined -fsanitize=unreachable -fno-sanitize-recover -fstack-protector 
 
 all: rebuild check 
