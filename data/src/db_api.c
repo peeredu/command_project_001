@@ -1,5 +1,7 @@
 #include "db_api.h"
 
+#include "../../backend/src/common/logger.h"
+
 /* Функция установления соединения с БД. Возвращает 0 если соединение установлено */
 int db_get_connect(MYSQL *conn) {
     char mysql_root_host[MAX_NAME_LENGTH];
