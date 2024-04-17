@@ -34,10 +34,11 @@ int db_get_connect(MYSQL *conn) {
 
     char *env_mysql_port = getenv("MYSQL_PORT");
     if (env_mysql_port != NULL) mysql_port = atoi(env_mysql_port);
-    mysql_port = (mysql_port > 1000) ? mysql_port : DB_DEFAULT_PORT;  
+    mysql_port = (mysql_port > 1000) ? mysql_port : DB_DEFAULT_PORT;
 
     // Получаем дескриптор соединения
     if (!mysql_init(conn)) {
+        db_log_message(DB_LOG_MSG_ERROR, "Can't create MySQL-descriptor");
         fprintf(stderr, "Error: can't create MySQL-descriptor\n");
         return DB_RETURN_ERROR;
     } else {
@@ -48,7 +49,8 @@ int db_get_connect(MYSQL *conn) {
         // Устанавливаем соединение с базой данных
         if (!mysql_real_connect(conn, mysql_root_host, mysql_user, mysql_password, mysql_database, mysql_port,
                                 NULL, 0)) {
-            // Если соединение не установлено выводим сообщение об ошибке         ;
+            // Если соединение не установлено выводим сообщение об ошибке
+            db_log_message(DB_LOG_MSG_ERROR, mysql_error(conn));
             fprintf(stderr, "Error: %s\n", mysql_error(conn));
             return DB_RETURN_ERROR;
         }
@@ -56,10 +58,12 @@ int db_get_connect(MYSQL *conn) {
         // русского текста
         if (mysql_query(conn, "SET NAMES 'UTF8'") != 0) {
             // Если кодировку установить невозможно - выводим сообщение об ошибке
+            db_log_message(DB_LOG_MSG_ERROR, "Can't set character set");
             fprintf(stderr, "Error: can't set character set\n");
             return DB_RETURN_ERROR;
         }
     }
+    db_log_message(DB_LOG_MSG_INFO, "Connect OK");
 
     return DB_RETURN_OK;
 }
@@ -94,6 +98,8 @@ int db_add_product(MYSQL *const conn, Product product) {
         return DB_RETURN_ERROR;
     }
     if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+    db_log_message(DB_LOG_MSG_INFO, "Add product OK");
+
     return DB_RETURN_OK;
 }
 
@@ -121,6 +127,8 @@ int db_remove_product(MYSQL *conn, const int id) {
         return DB_RETURN_ERROR;
     }
     if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+    db_log_message(DB_LOG_MSG_INFO, "Remove product OK");
+
     return DB_RETURN_OK;
 }
 
@@ -218,6 +226,7 @@ int db_get_product(MYSQL *conn, Product *product, const int id) {
     }
     mysql_free_result(prepare_meta_result);
     if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+    db_log_message(DB_LOG_MSG_INFO, "Get product OK");
 
     return get_product ? DB_RETURN_OK : DB_RETURN_ERROR;
 }
@@ -341,6 +350,7 @@ int db_get_products(MYSQL *conn, Products *arr_products) {
 
     mysql_free_result(prepare_meta_result);
     if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+    db_log_message(DB_LOG_MSG_INFO, "Get products OK");
 
     return DB_RETURN_OK;
 }
@@ -505,6 +515,7 @@ int db_get_order(MYSQL *conn, Order *order, const int id) {
     }
     mysql_free_result(prepare_meta_result);
     if (mysql_stmt_close(stmt)) return DB_RETURN_ERROR;
+    db_log_message(DB_LOG_MSG_INFO, "Get order OK");
 
     return DB_RETURN_OK;
 }

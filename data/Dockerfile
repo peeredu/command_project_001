@@ -6,6 +6,7 @@ ARG MYSQL_PASSWORD
 ARG MYSQL_ROOT_PASSWORD
 ARG MYSQL_ROOT_HOST
 ARG MYSQL_PORT
+ARG MYSQL_INITDB_SKIP_TZINFO
 
 # указываем переменные окружения
 ENV MYSQL_DATABASE=$MYSQL_DATABASE
@@ -14,13 +15,14 @@ ENV MYSQL_PASSWORD=$MYSQL_PASSWORD
 ENV MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 ENV MYSQL_ROOT_HOST=$MYSQL_ROOT_HOST
 ENV MYSQL_PORT=$MYSQL_PORT
+ENV MYSQL_INITDB_SKIP_TZINFO=$MYSQL_INITDB_SKIP_TZINFO
 
 # копируем в контейнер Docker файл инициализации базы данных в директорию /docker-entrypoint-initdb.d 
 # файл docker-entrypoint.sh будет запускать любые файлы в этой директории заканчивающиеся на «.sql»
 ADD ./docker/init/init.sql /docker-entrypoint-initdb.d
 
 # указываем,что порт 3306 необходимо открыть
-EXPOSE 3306
+EXPOSE 3306 33060
 
 # команды для docker
 # Сборка образа из Dockerfile, который находится в этой директории
